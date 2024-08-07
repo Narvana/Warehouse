@@ -19,6 +19,18 @@ const registerSchema=new mongoose.Schema(
             trim:true,
             unique:true,
         },
+        contactNo:{
+            type: String,
+            required: true,
+            unique: true,
+            validate: {
+                validator: function(value) {
+                    // Ensure the phone number is 10 digits long
+                    return /^[0-9]{10}$/.test(value);
+                },
+                message: 'Contact number must be a 10-digit number'
+            }
+        },
         email:{
             type:String,
             required:true,
@@ -35,13 +47,20 @@ const registerSchema=new mongoose.Schema(
         password:{
             type:String,
             required:true,
-        }
-        ,role:{
+        },
+        role:{
             type:String,
             required: true,
             enum:['ADMIN','USER','WAREHOUSE']
+        },
+        refreshToken:
+        {
+            type:String,
         }
     },
+    {
+        timestamp:true,
+    }
 )
 
 const Register=mongoose.model('Register',registerSchema);
