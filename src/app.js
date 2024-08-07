@@ -1,3 +1,5 @@
+require('dotenv').config({ path: '../.env' });
+
 const express=require('express');
 const app=express();
 const bodyParser=require('body-parser');
@@ -17,7 +19,7 @@ const helmet=require('helmet');
 
 
 // port
-const port=1010;
+const port=8081;
 
 
 // database
