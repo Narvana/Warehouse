@@ -9,15 +9,17 @@ const AddWareHouse=async(req,res,next)=>{
 
     const {basicInfo,layout,floorRent}=req.body
 
-    const {warehouseID}=req.params;
+    // const {warehouseID}=req.params;
 
-    const checkUser=await Register.findOne({id:req.user.id});
+    const checkUser=await Register.findOne({_id:req.user.id});
 
     if(!checkUser)
     {
-        return next(ApiErrors(401,"Unauthenticaed User. You Data do not exist in the database"));   
+        return next(ApiErrors(401,"Unauthenticaed User. Your Data do not exist in the database"));   
     }
-    if(req.user.id !== warehouseID)
+    // return res.json(req.user.id);
+
+    if(req.user.id != checkUser._id)
     {
         return next(ApiErrors(401,"Unauthenticaed User. You are not allowed to add products"));
     }
@@ -38,7 +40,6 @@ const AddWareHouse=async(req,res,next)=>{
                 req.files.wareHouseImage.map(async (file)=>{
                     uploadResult= await uploadOnCloudinary(file.path);
                     link= uploadResult.url;
-                    console.log(link);
                     imageURL.push(link);
                 })
             )
