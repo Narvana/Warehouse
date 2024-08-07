@@ -1,27 +1,14 @@
-// require('dotenv').config();
-// const mongoose=require('mongoose');
-// //  require('')
-
-// const uri=process.env.URI;
-
-// mongoose.connect(uri)
-// .then(()=>{
-//     console.log('Connection Successful with MongoDB');
-// })
-// .catch((error)=>{
-//     console.log(`No Connection with MongoDB. Error:${error}`);
-// })
-
 require('dotenv').config();
+ 
 const mongoose = require('mongoose');
 
-const uri = process.env.MONGO_URI;
+// const uri = process.env.MONGO_URI; 
 
 // Define a function to connect to the database
 const connectToDatabase = async () => {
   try {
    // Attempt to connect to MongoDB
-    await mongoose.connect(uri);
+    await mongoose.connect('mongodb+srv://warehouse:1Ware2House3ing@cluster0.gkp8oym.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0');
     console.log('Successfully connected to MongoDB');
   } catch (error) {
     console.error(`Error connecting to MongoDB: ${error.message}`);
