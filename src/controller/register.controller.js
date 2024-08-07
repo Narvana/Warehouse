@@ -97,7 +97,7 @@ const login=async(req,res,next)=>{
          }
          else if(existingEmail.role !== req.role)
          {
-            return next(ApiErrors(400,`email ${email}is not assigned with ${req.role} role`))
+            return next(ApiErrors(400,`email ${email} is not assigned with ${req.role} role`))
          }
          else
          {
