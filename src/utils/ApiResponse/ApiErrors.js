@@ -1,10 +1,10 @@
 
 const ApiErrors = (statusCode,message)=>{
-    
     return {
-        success:0,
+        status:0,
         statusCode,
-        message,    
+        // data,
+        message,
     }
 }
 

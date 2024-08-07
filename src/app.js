@@ -74,7 +74,7 @@ app.use((err, req, res, next) => {
         // Handle Multer errors
         if (err.code === 'LIMIT_FILE_SIZE') {
             return  res.status(413).json({
-                success:0,
+                status:0,
                 data:"",
                 statusCode : 413,
                 message:'File size exceeds the limit, Upload an image of 1MB',
@@ -86,7 +86,7 @@ app.use((err, req, res, next) => {
     
     if (err.message === 'Invalid file type. Only JPEG, PNG, and GIF files are allowed') {
             return  res.status(400).json({
-                success:0,
+                status:0,
                 data:"",
                 statusCode : 400,
                 message: 'Invalid file type. Only JPEG, PNG, and GIF files are allowed.',
@@ -104,12 +104,12 @@ app.use((err, req, res, next) => {
     //     });
     // }
     else{
-        const success=err.success;
+        const status=err.status;
         const statusCode = err.statusCode || 500; 
         const data=err.data || "";
         const message = err.message || 'Internal Server Error';
         return res.status(statusCode).json({
-          success,
+          status,
           data,
           statusCode,
           message,
