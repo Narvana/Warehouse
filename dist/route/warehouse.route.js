@@ -12,4 +12,7 @@ router.post('/add/warehouse', verifyToken.verify, verifyRole('WAREHOUSE'), uploa
 }]), warehouseController.AddWareHouse);
 router.get('/get/WareHouse/all', warehouseController.allWareHouse);
 router.get('/get/WareHouse', verifyToken.verify, warehouseController.getWarehouse);
+
+// single detail with query id
+router.get('/get/WareHouse/detail', warehouseController.singleWareHouse);
 module.exports = router;

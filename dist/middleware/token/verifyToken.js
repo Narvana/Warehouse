@@ -2,7 +2,10 @@
 
 // require('dotenv').config();
 var jwt = require('jsonwebtoken');
+
 // const secretKey=process.env.SECRET
+var ApiErrors = require('../../utils/ApiResponse/ApiErrors');
+var ApiResponse = require('../../utils/ApiResponse/ApiResponse');
 
 // const cookieParser=require('cookie-parser')
 // app.use(cookieParser());
@@ -18,19 +21,17 @@ var verify = function verify(req, res, next) {
     // console.log({token});
 
     if (!token) {
-      return res.status(400).send('Unauthorized User, No Token Found');
+      return next(ApiErrors(401, 'Unauthorized User, No Token Found'));
     }
     jwt.verify(token, 'xQJslU3ieVjhYt0xCUu8hhUGayx265KgfP4W0abHhvfJJA8xFO8cYVChPGhjz0JT4w1GP3vURXdXBk8jC2Hu4W49jz', function (err, user) {
       if (err) {
-        return res.status(400).send("Unauthorized User, Token Don't Matches");
+        return next(ApiErrors(401, "Unauthorized User, Incorrect Token"));
       }
       req.user = user;
       next();
     });
   } catch (error) {
-    res.status(500).json({
-      error: error
-    });
+    return next(ApiErrors(500, "Internal Server Error  -: ".concat(error)));
   }
 };
 module.exports = {

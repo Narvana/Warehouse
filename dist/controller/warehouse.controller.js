@@ -196,10 +196,46 @@ var getWarehouse = /*#__PURE__*/function () {
     return _ref4.apply(this, arguments);
   };
 }();
+var singleWareHouse = /*#__PURE__*/function () {
+  var _ref5 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee5(req, res, next) {
+    var id, SingleWarehouse;
+    return _regeneratorRuntime().wrap(function _callee5$(_context5) {
+      while (1) switch (_context5.prev = _context5.next) {
+        case 0:
+          id = req.query.id;
+          _context5.prev = 1;
+          _context5.next = 4;
+          return Warehouse.findOne({
+            _id: id
+          });
+        case 4:
+          SingleWarehouse = _context5.sent;
+          if (SingleWarehouse) {
+            _context5.next = 7;
+            break;
+          }
+          return _context5.abrupt("return", next(ApiErrors(404, "Warehouse with this id not found")));
+        case 7:
+          return _context5.abrupt("return", next(ApiResponses(200, SingleWarehouse, 'WareHouse Detail')));
+        case 10:
+          _context5.prev = 10;
+          _context5.t0 = _context5["catch"](1);
+          return _context5.abrupt("return", next(ApiErrors(500, "Error retrieving warehouse: ".concat(_context5.t0))));
+        case 13:
+        case "end":
+          return _context5.stop();
+      }
+    }, _callee5, null, [[1, 10]]);
+  }));
+  return function singleWareHouse(_x11, _x12, _x13) {
+    return _ref5.apply(this, arguments);
+  };
+}();
 module.exports = {
   AddWareHouse: AddWareHouse,
   allWareHouse: allWareHouse,
-  getWarehouse: getWarehouse
+  getWarehouse: getWarehouse,
+  singleWareHouse: singleWareHouse
 };
 
 // {
