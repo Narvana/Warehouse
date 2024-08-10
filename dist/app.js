@@ -18,8 +18,8 @@ app.use(bodyParser.json());
 // app.use(express.urlencoded({extended:false},{limit:"16kb"}))
 
 // security
-var cors = require('cors');
-var helmet = require('helmet');
+// const cors= require('cors');
+// const helmet=require('helmet');
 
 // port
 var port = process.env.PORT || 8081;

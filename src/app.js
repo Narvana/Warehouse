@@ -14,12 +14,12 @@ app.use(bodyParser.json());
 
 
 // security
-const cors= require('cors');
-const helmet=require('helmet');
+// const cors= require('cors');
+// const helmet=require('helmet');
 
 
 // port
-const port=8081;
+const port=process.env.PORT || 8081;
 
 
 // database
