@@ -18,11 +18,18 @@ app.use(bodyParser.json());
 // app.use(express.urlencoded({extended:false},{limit:"16kb"}))
 
 // security
-// const cors= require('cors');
-// const helmet=require('helmet');
+var cors = require('cors');
+var helmet = require('helmet');
+app.use(cors({
+  origin: ["http://localhost:5173", "https://ware-house-five.vercel.app"],
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  credentials: true
+  // allowedHeaders: ['Content-Type', 'Authorization'],
+}));
 
 // port
-var port = process.env.PORT || 8081;
+var port = 8081;
+// process.env.PORT || 8081;
 
 // database
 require('./database/Warehouse.db');

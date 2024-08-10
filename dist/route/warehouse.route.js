@@ -14,5 +14,5 @@ router.get('/get/WareHouse/all', warehouseController.allWareHouse);
 router.get('/get/WareHouse', verifyToken.verify, warehouseController.getWarehouse);
 
 // single detail with query id
-router.get('/get/WareHouse/detail', warehouseController.singleWareHouse);
+router.get('/get/WareHouse/Detail', warehouseController.singleWareHouse);
 module.exports = router;
