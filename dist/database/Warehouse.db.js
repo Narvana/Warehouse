@@ -8,11 +8,12 @@ var path = require('path');
 
 // require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
 
-require('dotenv').config({
-  path: '../.env'
-});
+// require('dotenv').config({ path: '../.env' });
+
 var mongoose = require('mongoose');
-var uri = process.env.URI;
+// 
+// const uri = process.env.URI;
+
 var connectToDatabase = /*#__PURE__*/function () {
   var _ref = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee() {
     return _regeneratorRuntime().wrap(function _callee$(_context) {
@@ -20,7 +21,7 @@ var connectToDatabase = /*#__PURE__*/function () {
         case 0:
           _context.prev = 0;
           _context.next = 3;
-          return mongoose.connect(uri);
+          return mongoose.connect('mongodb+srv://warehouse:1Ware2House3ing@cluster0.gkp8oym.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0');
         case 3:
           console.log('Successfully connected to MongoDB');
           _context.next = 10;
