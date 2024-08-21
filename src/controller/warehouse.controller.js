@@ -1,6 +1,6 @@
 const Warehouse = require('../model/warehouse.model');
 const Register=require('../model/register.model');
-const ThreePL=require('../model/3PL.model');
+// const ThreePL=require('../model/3PL.model');
 const mongoose = require('mongoose');
 const ApiErrors=require('../utils/ApiResponse/ApiErrors');
 const ApiResponses=require('../utils/ApiResponse/ApiResponse');
