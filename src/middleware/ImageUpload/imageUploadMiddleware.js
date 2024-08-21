@@ -1,12 +1,12 @@
 const multer= require('multer');
-const ApiErrors=require('../../utils/ApiResponse/ApiErrors')
+// const ApiErrors=require('../../utils/ApiResponse/ApiErrors')
 
 const storage= multer.diskStorage({
     destination:function(req,file,cb){
         cb(null,"./upload/images")
     },
     filename: function(req,file,cb){
-        cb(null,Date.now() + '-' + this.filename);
+        cb(null,Date.now() + '-' + this.originalname);
     }
 })
 

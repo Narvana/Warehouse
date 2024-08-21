@@ -1,5 +1,6 @@
 const Warehouse = require('../model/warehouse.model');
 const Register=require('../model/register.model');
+const ThreePL=require('../model/3PL.model');
 const mongoose = require('mongoose');
 const ApiErrors=require('../utils/ApiResponse/ApiErrors');
 const ApiResponses=require('../utils/ApiResponse/ApiResponse');
@@ -36,10 +37,16 @@ const AddWareHouse=async(req,res,next)=>{
         let uploadResult;
          
         if(req.files && req.files.wareHouseImage && req.files.wareHouseImage.length > 0){
+            // return res.json(req.files.wareHouseImage);
             await Promise.all(
                 req.files.wareHouseImage.map(async (file)=>{
-                    uploadResult= await uploadOnCloudinary(file.path);
-                    link= uploadResult.url;
+                    // return console.log(file);
+                    
+                    uploadResult = await uploadOnCloudinary(file.path);
+                    
+                    console.log(uploadResult);
+                    
+                    link = uploadResult.url;
                     imageURL.push(link);
                 })
             )
@@ -95,7 +102,7 @@ const allWareHouse=async(req,res,next)=>{
     }
 }
 
-const getWarehouse=async(req,res,next)=>{
+const getListerWarehouse=async(req,res,next)=>{
     const id=req.user.id;
     // try {
         Warehouse.find({ wareHouseLister: new mongoose.Types.ObjectId(id) })
@@ -128,11 +135,164 @@ const singleWareHouse=async(req,res,next)=>{
     }
 }
 
+const searchWareHouseAll=async(req,res,next)=>{
+        const { id, state, city, price, type } = req.query;
+    
+        // Initialize an empty query object
+        let query = {};
+    
+        // Add filters to the query object based on provided query parameters
+        if (id) {
+            query._id = id;
+        }
+        if (state) {
+            query['basicInfo.state'] = state;
+        }
+        if (city) {
+            query['basicInfo.city'] = city;
+        }
+        if (price) {
+            query['floorRent.expectedRent'] = { $lte: price }; // Assuming price is a maximum value
+        }
+        if (type) {
+            query['layout.warehouseType'] = type;
+        }
+    
+        try {
+            const SingleWarehouse = await Warehouse.find(query);
+    
+            if (SingleWarehouse.length === 0) {
+                return next(ApiErrors(404, `No warehouse found matching the criteria`));
+            }
+    
+            return next(ApiResponses(200, SingleWarehouse, 'Warehouse Details'));
+        } catch (error) {
+            return next(ApiErrors(500, `Error retrieving warehouse: ${error.message}`));
+        }    
+}
+
+// const Add3PL=async(req,res,next)=>{
+//     const {company_details,warehouse_details, cold_storage_details}=req.body
+
+//     // const {warehouseID}=req.params;
+
+//     const checkUser=await Register.findOne({_id:req.user.id});
+
+//     if(!checkUser)
+//     {
+//         return next(ApiErrors(401,"Unauthenticaed User. You do not exist in the database"));   
+//     }
+//     if(req.user.id != checkUser._id)
+//     {
+//         return next(ApiErrors(401,"Unauthenticaed User. You are not allowed to add products"));
+//     }
+//     if(req.user.role !== req.role)
+//     {
+//         return next(ApiErrors(403,"Unauthorized User. Only user assign with Warehouse role can access this"));
+//     }
+//     // if(!basicInfo || !layout || !floorRent){
+//     //     return next(ApiErrors(400,`All Feilds are required`));
+//     // } 
+
+//     try 
+//     {
+//         let imageURL=[]
+//         let link;
+//         let uploadResult;
+         
+//         if(req.files && req.files['warehouse_details.WarehouseImage'] && req.files['warehouse_details.WarehouseImage'].length > 0){
+//             // return res.json(req.files.warehouse_details.WarehouseImage);            
+            
+//             await Promise.all(
+//                 req.files['warehouse_details.WarehouseImage'].map(async (file)=>{
+//                     uploadResult= await uploadOnCloudinary(file.path);
+//                     link= uploadResult.url;
+//                     imageURL.push(link);
+//                 })
+//             )
+//          }else{
+//             return next(ApiErrors(400,"No file uploaded. Please upload some pictures"));
+//          }
+
+//         let PL;
+
+//         if(warehouse_details)
+//         {
+//             warehouse_details.WarehouseImage = imageURL;
+
+//             PL=new ThreePL({
+//                 wareHouseLister:req.user.id,
+//                 company_details,
+//                 warehouse_details,
+//              })   
+//         }
+//         else if(cold_storage_details)
+//         {
+//             PL=new ThreePL({
+//                 wareHouseLister:req.user.id,
+//                 company_details,
+//                 cold_storage_details,
+//             })    
+//         }
+//         else if(warehouse_details && cold_storage_details)
+//         {
+
+//             warehouse_details.WarehouseImage = imageURL;
+
+//             PL=new ThreePL({
+//                 wareHouseLister:req.user.id,
+//                 company_details,
+//                 warehouse_details,
+//                 cold_storage_details,
+//             })    
+//         }
+    
+//         const data=await PL.save();
+
+//         return next(ApiResponses(201,data,'3PL Added Successfully'));
+
+//     } catch (error) {
+//         if(error.name === 'ValidationError')
+//         {
+//             const errorMessages = Object.values(error.errors).map(error => error.message);
+//             console.log(error);
+//             return next(ApiErrors(500,errorMessages[0]));            
+            
+            
+//         }
+//         else if(error.code === 11000)
+//         {
+//             if(error.errorResponse.errmsg.includes('mobileNo'))
+//             {
+//                 return next(ApiErrors(500, `This Mobile no is already taken`));
+//             }else if(error.errorResponse.errmsg.includes('GST_no'))
+//             {
+//                 return next(ApiErrors(500, `This GST no is already taken`));
+//             }
+//             else if(error.errorResponse.errmsg.includes('CIN'))
+//                 {
+//                     return next(ApiErrors(500, `This CIN is already taken`));
+//                 }
+//             else if(error.errorResponse.errmsg.includes('email'))
+//                 {
+//                     return next(ApiErrors(500, `This email is already taken`));
+//                 }
+//         }
+//         else
+//         {
+//             return next(ApiErrors(500,`Internal Serve Error, Error -: ${error} `));
+//         }
+//     }
+   
+// }
+
 module.exports={
     AddWareHouse,
     allWareHouse,
-    getWarehouse,
-    singleWareHouse
+    getListerWarehouse,
+    singleWareHouse,
+    searchWareHouseAll,
+    // Add3PL
 }
 
 
