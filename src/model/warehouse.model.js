@@ -82,14 +82,15 @@ const warehouseSchema = new mongoose.Schema({
         },
        pincode: 
        {
-        type: Number,
-        required: [true, 'Pincode is required'],
-        validate: {
-        validator: function(v) {
-            return /^[0-9]{6}$/.test(v);
-        },
-        message: `Pincode must be a 6-digit pincode!`
-    }
+            type: Number,
+            required: [true, 'Pincode is required'],
+            validate: 
+            {
+                validator: function(v) {
+                    return /^[0-9]{6}$/.test(v);
+                },
+                message: `Pincode must be a 6-digit pincode!`
+            }
        }
     },
     layout: {
