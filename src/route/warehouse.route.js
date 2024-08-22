@@ -13,6 +13,7 @@ const warehouseController=require('../controller/warehouse.controller');
 // const threePLController=require('../controller/warehouse.controller')
 
 router.post('/add/warehouse',verifyToken.verify,verifyRole('WAREHOUSE'),upload.fields([{name:"wareHouseImage", maxCount:5}]),warehouseController.AddWareHouse);
+
 router.get('/get/WareHouse/Lister/all',warehouseController.allWareHouse);
 router.get('/get/WareHouse',verifyToken.verify,warehouseController.getListerWarehouse);
 
@@ -20,14 +21,7 @@ router.get('/get/WareHouse',verifyToken.verify,warehouseController.getListerWare
 router.get('/get/WareHouse/Detail',warehouseController.singleWareHouse);
 router.get('/get/WareHouse/All/Search',warehouseController.searchWareHouseAll);
 
-// 3PL
-// try {
-    // console.log('hello');
-    // router.post('/add/ThreePL',verifyToken.verify,verifyRole('WAREHOUSE'),upload.fields([{ name: 'warehouse_details.WarehouseImage', maxCount: 5 }]),warehouseController.Add3PL);
-
-// } catch (error) {
-//     console.log(error);
-// }
+router.post('/add/ThreePL',verifyToken.verify,verifyRole('WAREHOUSE'),upload.fields([{ name: 'warehouse_details[WarehouseImage]', maxCount: 5 }]),warehouseController.Add3PL);
 
 
 module.exports=router
