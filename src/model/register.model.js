@@ -22,6 +22,7 @@ const registerSchema=new mongoose.Schema(
         contactNo:{
             type: String,
             required: true,
+            trim:true,
             unique: true,
             validate: {
                 validator: function(value) {
@@ -47,6 +48,7 @@ const registerSchema=new mongoose.Schema(
         password:{
             type:String,
             required:true,
+            trim:true
         },
         role:{
             type:String,
