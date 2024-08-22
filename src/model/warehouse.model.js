@@ -144,9 +144,9 @@ const warehouseSchema = new mongoose.Schema({
         roadAccess: {
             type: String,
             required: [true,'Road Access is required'],
-        },
+        }, 
         expectedRent: {
-            type: Number,   
+            type: Number,
             required: [true,'Expected Rent is required'],
         },
         expectedDeposit: {
