@@ -154,10 +154,10 @@ const warehouseSchema = new mongoose.Schema({
             type: Number,   
             required: [true,'Expexted Deposit is required'],
         },
-        warehouseDescription: {
-            type: String,
-            required: [true,'Ware House Description is required'],
-        }
+        // warehouseDescription: {
+        //     type: String,
+        //     required: [true,'Ware House Description is required'],
+        // }
     },
     wareHouseImage: [String] // Array of strings, likely URLs or paths
 });
