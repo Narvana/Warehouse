@@ -5,7 +5,7 @@ const app=express();
 const bodyParser=require('body-parser');
 const mongoose=require('mongoose');
 const multer=require('multer');
-// const cookieParser=require('cookie-parser');
+
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
@@ -13,10 +13,12 @@ app.use(bodyParser.json());
 // app.use(express.urlencoded({extended:false},{limit:"16kb"}))
 
 
+
 // security
 const cors= require('cors');
 const helmet=require('helmet');
 
+app.use(helmet());
 
 app.use(cors({
     origin: ["http://localhost:5173","https://ware-house-five.vercel.app"], 
@@ -115,7 +117,8 @@ app.use((err, req, res, next) => {
     //     });
     // }
     else{
-        const status=err.status;
+
+        const status=err.status || 0;        
         const statusCode = err.statusCode || 500; 
         const data=err.data || "";
         const message = err.message || 'Internal Server Error';
