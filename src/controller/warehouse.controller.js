@@ -1,6 +1,8 @@
 const Warehouse = require('../model/warehouse.model');
 const Register=require('../model/register.model');
 const ThreePL=require('../model/3PL.model');
+const ThreePLColdstorage=require('../model/3PL.Coldstorage.model');
+const ThreePLWarehouse=require('../model/3PL.Warehouse.model');
 const mongoose = require('mongoose');
 const ApiErrors=require('../utils/ApiResponse/ApiErrors');
 const ApiResponses=require('../utils/ApiResponse/ApiResponse');
@@ -86,6 +88,7 @@ const AddWareHouse=async(req,res,next)=>{
         }
     }
 }
+
 
 const allWareHouse=async(req,res,next)=>{
     // const {wareHouseID}=req.params;
@@ -197,92 +200,308 @@ const Add3PL=async(req,res,next)=>{
     // } 
     try 
     {
-        let imageURL=[]
-        let link;
-        let uploadResult;
- 
-        if (req.files && req.files['warehouse_details[WarehouseImage]'] && req.files['warehouse_details[WarehouseImage]'].length > 0)
-        {
-            await Promise.all(
-                req.files['warehouse_details[WarehouseImage]'].map(async (file)=>{
-                    uploadResult= await uploadToFirebase(file);
-                    link= uploadResult;
-                    imageURL.push(link);
-                })
-            )
-         }else{
-            return next(ApiErrors(400,"No file uploaded. Please upload some pictures"));
-         }
-
         let PL;
+        let imageURL = [];
+        let uploadResult;
+        let link;
+        
+        // if(warehouse_details) {
+        //     // Handle warehouse image uploads
+        //     if(req.files && req.files['warehouse_details[WarehouseImage]'] && req.files['warehouse_details[WarehouseImage]'].length > 0) {
+        //         await Promise.all(
+        //             req.files['warehouse_details[WarehouseImage]'].map(async (file) => {
+        //                 uploadResult = await uploadToFirebase(file);
+        //                 link = uploadResult;
+        //                 imageURL.push(link);
+        //             })
+        //         );
+        //     } else {
+        //         return next(ApiErrors(400, "No file uploaded. Please upload some pictures"));
+        //     }
+        
+        //     warehouse_details.WarehouseImage = imageURL;
+        // }
+        
+        // if (warehouse_details && cold_storage_details) {
+        //     // Both warehouse and cold storage details exist
+        //     PL = new ThreePL({
+        //         wareHouseLister: req.user.id,
+        //         company_details,
+        //         warehouse_details,
+        //         cold_storage_details,
+        //     });
+        // } else if (warehouse_details) {
+        //     // Only warehouse details exist
+        //     PL = new ThreePL({
+        //         wareHouseLister: req.user.id,
+        //         company_details,
+        //         warehouse_details,
+        //     });
+        // } else if (cold_storage_details) {
+        //     // Only cold storage details exist
+        //     PL = new ThreePL({
+        //         wareHouseLister: req.user.id,
+        //         company_details,
+        //         cold_storage_details,
+        //     });
+        // } else {
+        //     return next(ApiErrors(400, "No valid details provided."));
+        // }
 
-        if(warehouse_details)
-        {
+        if(warehouse_details) {
+            // Handle warehouse image uploads
+            if(req.files && req.files['warehouse_details[WarehouseImage]'] && req.files['warehouse_details[WarehouseImage]'].length > 0) {
+                await Promise.all(
+                    req.files['warehouse_details[WarehouseImage]'].map(async (file) => {
+                        uploadResult = await uploadToFirebase(file);
+                        link = uploadResult;
+                        imageURL.push(link);
+                    })
+                );
+            } else {
+                return next(ApiErrors(400, "No file uploaded. Please upload some pictures"));
+            }
+        
             warehouse_details.WarehouseImage = imageURL;
-
-            PL=new ThreePL({
-                wareHouseLister:req.user.id,
+        }
+        
+        if (warehouse_details && cold_storage_details) {
+            // Both warehouse and cold storage details exist
+            PL = new ThreePL({
+                wareHouseLister: req.user.id,
                 company_details,
                 warehouse_details,
-             })   
-        }
-        else if(cold_storage_details)
-        {
-            PL=new ThreePL({
-                wareHouseLister:req.user.id,
-                company_details,
                 cold_storage_details,
-            })    
-        }
-        else if(warehouse_details && cold_storage_details)
-        {
-
-            warehouse_details.WarehouseImage = imageURL;
-
-            PL=new ThreePL({
-                wareHouseLister:req.user.id,
+            });
+        } else if (warehouse_details) {
+            // Only warehouse details exist
+            PL = new ThreePL({
+                wareHouseLister: req.user.id,
                 company_details,
                 warehouse_details,
+            });
+        } else if (cold_storage_details) {
+            // Only cold storage details exist
+            PL = new ThreePL({
+                wareHouseLister: req.user.id,
+                company_details,
                 cold_storage_details,
-            })    
+            });
+        } else {
+            return next(ApiErrors(400, "No valid details provided."));
         }
-    
-        const data=await PL.save();
 
+        
+        // Save the PL object
+        const data = await PL.save();
+ 
         return next(ApiResponses(201,data,'3PL Added Successfully'));
 
     } catch (error) {
         if(error.name === 'ValidationError')
         {
             const errorMessages = Object.values(error.errors).map(error => error.message);
-            console.log(error);
+            console.log({ ERROR : error });
             return next(ApiErrors(500,errorMessages[0]));            
         }
         else if(error.code === 11000)
         {
             if(error.errorResponse.errmsg.includes('mobileNo'))
             {
-                return next(ApiErrors(500, `This Mobile no is already taken`));
+                console.log(error);
+                return next(ApiErrors(500, `This Mobile no is already taken -: ${error.errorResponse.errmsg}`));
             }else if(error.errorResponse.errmsg.includes('GST_no'))
-            {
-                return next(ApiErrors(500, `This GST no is already taken`));
+            { 
+                console.log(error);
+                return next(ApiErrors(500, `This GST no is already taken -: ${error.errorResponse.errmsg}`));
             }
             else if(error.errorResponse.errmsg.includes('CIN'))
                 {
-                    return next(ApiErrors(500, `This CIN is already taken`));
+                    console.log(error);
+                    return next(ApiErrors(500, `This CIN is already taken -: ${error.errorResponse.errmsg}`));
                 }
             else if(error.errorResponse.errmsg.includes('email'))
                 {
-                    return next(ApiErrors(500, `This email is already taken`));
+                    console.log(error);
+                    return next(ApiErrors(500, `This email is already taken -: ${error.errorResponse.errmsg}`));
                 }
         }
         else
         {
-            return next(ApiErrors(500,`Internal Serve Error, Error -: ${error} `));
+            return next(ApiErrors(500,`Internal Serve Error, ${error}`));
         }
     }
    
 }
+
+const Add3PLWarehouse=async(req,res,next)=>{
+    const {company_details,warehouse_details, cold_storage_details}=req.body
+
+    // const {warehouseID}=req.params;
+
+    const checkUser=await Register.findOne({_id:req.user.id});
+
+    if(!checkUser)
+    {
+        return next(ApiErrors(401,"Unauthenticaed User. You do not exist in the database"));   
+    }
+    if(req.user.id != checkUser._id)
+    {
+        return next(ApiErrors(401,"Unauthenticaed User. You are not allowed to add products"));
+    }
+    if(req.user.role !== req.role)
+    {
+        return next(ApiErrors(403,"Unauthorized User. Only user assign with Warehouse role can access this"));
+    }
+    if(!company_details || !warehouse_details){
+        return next(ApiErrors(400,`All Feilds are required`));
+    } 
+    try 
+    {
+        let PL;
+        let imageURL = [];
+        let uploadResult;
+        let link;
+        
+            if(req.files && req.files['warehouse_details[WarehouseImage]'] && req.files['warehouse_details[WarehouseImage]'].length > 0) {
+                await Promise.all(
+                    req.files['warehouse_details[WarehouseImage]'].map(async (file) => {
+                        uploadResult = await uploadToFirebase(file);
+                        link = uploadResult;
+                        imageURL.push(link);
+                    })
+                );
+            } else {
+                return next(ApiErrors(400, "No file uploaded. Please upload some pictures"));
+            }
+        
+            warehouse_details.WarehouseImage = imageURL;
+
+            PL = new ThreePLWarehouse({
+                wareHouseLister: req.user.id,
+                company_details,
+                warehouse_details,
+            });
+
+        
+        // Save the PL object
+        const data = await PL.save();
+ 
+        return next(ApiResponses(201,data,'Warehouse 3PL Added Successfully'));
+
+    } catch (error) {
+        if(error.name === 'ValidationError')
+        {
+            const errorMessages = Object.values(error.errors).map(error => error.message);
+            console.log({ ERROR : error });
+            return next(ApiErrors(500,errorMessages[0]));            
+        }
+        else if(error.code === 11000)
+        {
+            if(error.errorResponse.errmsg.includes('mobileNo'))
+            {
+                console.log(error);
+                return next(ApiErrors(500, `This Mobile no is already taken -: ${error.errorResponse.errmsg}`));
+            }else if(error.errorResponse.errmsg.includes('GST_no'))
+            { 
+                console.log(error);
+                return next(ApiErrors(500, `This GST no is already taken -: ${error.errorResponse.errmsg}`));
+            }
+            else if(error.errorResponse.errmsg.includes('CIN'))
+            {
+                console.log(error);
+                return next(ApiErrors(500, `This CIN is already taken -: ${error.errorResponse.errmsg}`));
+            }
+            else if(error.errorResponse.errmsg.includes('email'))
+            {
+                console.log(error);
+                return next(ApiErrors(500, `This email is already taken -: ${error.errorResponse.errmsg}`));
+            }
+        }
+        else
+        {
+            return next(ApiErrors(500,`Internal Serve Error, ${error}`));
+        }
+    }
+}
+
+const Add3PLColdStorage=async(req,res,next)=>{
+    const {company_details,warehouse_details, cold_storage_details}=req.body
+
+    // const {warehouseID}=req.params;
+
+    const checkUser=await Register.findOne({_id:req.user.id});
+
+    if(!checkUser)
+    {
+        return next(ApiErrors(401,"Unauthenticaed User. You do not exist in the database"));   
+    }
+    if(req.user.id != checkUser._id)
+    {
+        return next(ApiErrors(401,"Unauthenticaed User. You are not allowed to add products"));
+    }
+    if(req.user.role !== req.role)
+    {
+        return next(ApiErrors(403,"Unauthorized User. Only user assign with Warehouse role can access this"));
+    }
+    // if(!company_details || !cold_storage_details){
+    //     return next(ApiErrors(400,`All Feilds are required`));
+    // } 
+    try 
+    {
+        let PL;                
+
+        PL = new ThreePLColdstorage({
+            wareHouseLister: req.user.id,
+            company_details,
+            cold_storage_details
+        });
+
+        
+        // Save the PL object
+        const data = await PL.save();
+ 
+        return next(ApiResponses(201,data,'Warehouse 3PL Added Successfully'));
+
+    } catch (error) {
+        if(error.name === 'ValidationError')
+        {
+            const errorMessages = Object.values(error.errors).map(error => error.message);
+            console.log({ ERROR : error });
+            return next(ApiErrors(500,errorMessages[0]));            
+        }
+        else if(error.code === 11000)
+        {
+            if(error.errorResponse.errmsg.includes('mobileNo'))
+            {
+                console.log(error);
+                return next(ApiErrors(500, `This Mobile no is already taken -: ${error.errorResponse.errmsg}`));
+            }else if(error.errorResponse.errmsg.includes('GST_no'))
+            { 
+                console.log(error);
+                return next(ApiErrors(500, `This GST no is already taken -: ${error.errorResponse.errmsg}`));
+            }
+            else if(error.errorResponse.errmsg.includes('CIN'))
+            {
+                console.log(error);
+                return next(ApiErrors(500, `This CIN is already taken -: ${error.errorResponse.errmsg}`));
+            }
+            else if(error.errorResponse.errmsg.includes('email'))
+            {
+                console.log(error);
+                return next(ApiErrors(500, `This email is already taken -: ${error.errorResponse.errmsg}`));
+            }
+        }
+        else
+        {
+            return next(ApiErrors(500,`Internal Serve Error, ${error}`));
+        }
+    }
+   
+}
+
+
+
 
 module.exports={
     AddWareHouse,
@@ -290,7 +509,9 @@ module.exports={
     getListerWarehouse,
     singleWareHouse,
     searchWareHouseAll,
-    Add3PL
+    Add3PL,
+    Add3PLWarehouse,
+    Add3PLColdStorage
 }
 
 // {
