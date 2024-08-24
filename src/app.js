@@ -21,7 +21,7 @@ const helmet=require('helmet');
 app.use(helmet());
 
 app.use(cors({
-    origin: ["http://localhost:5173","https://ware-house-five.vercel.app"], 
+    origin: ["http://localhost:5173","https://ware-house-five.vercel.app,https://warehouse-2.netlify.app,http://localhost:3000"], 
     methods:["GET","POST","PUT","DELETE"],
     credentials:true,   
     // allowedHeaders: ['Content-Type', 'Authorization'],
