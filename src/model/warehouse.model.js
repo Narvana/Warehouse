@@ -44,7 +44,7 @@ const warehouseSchema = new mongoose.Schema({
                     // Ensure the phone number is 10 digits long
                     return /^[0-9]{10}$/.test(value);
                 },
-                message: 'Contact number must be a 10-digit number'
+                message: 'Mobile number must be a 10-digit number'
             }
         },
         email: {
@@ -119,7 +119,7 @@ const warehouseSchema = new mongoose.Schema({
         listingFor: {
             type: String,
             enum: ['Rent', 'Selling'],
-            required: [true,'City is required'],
+            required: [true,'Listing for is required'],
         },
         plinthHeight: {
             type: Number,   
