@@ -160,6 +160,9 @@ const warehouseSchema = new mongoose.Schema({
         }
     }, 
     wareHouseImage: [String] // Array of strings, likely URLs or paths
+},
+{
+    timestamps:true
 });
 
 const Warehouse = mongoose.model('Warehouse', warehouseSchema);

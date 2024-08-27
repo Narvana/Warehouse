@@ -77,14 +77,13 @@ const ThreePLWarehouseSchema= new mongoose.Schema({
             type: String,
                 required: [true, 'GST number is required for Company Details'],
                 trim: true,
-                maxlength: [15, 'GST number cannot exceed 15 characters'],
                 unique: true,
                 validate: {
                     validator: function(value) {
                         // Ensure the GST number is alphanumeric and has a length of up to 15 characters
-                        return /^[a-zA-Z0-9]{1,15}$/.test(value);
+                        return /^[a-zA-Z0-9]{15}$/.test(value);
                     },
-                    message: 'GST number must be alphanumeric and cannot exceed 15 characters'
+                    message: 'GST number must be alphanumeric and must be 15 characters'
                 }
         },
         CIN: {
@@ -160,7 +159,11 @@ const ThreePLWarehouseSchema= new mongoose.Schema({
         },
         WarehouseImage:[String]
     },
-});
+},
+{
+    timestamps:true
+}
+);
 
 
 const ThreePLWarehouse= mongoose.model('ThreePLWarehouse',ThreePLWarehouseSchema);
