@@ -169,7 +169,8 @@ const ThreePLColdstorageSchema= new mongoose.Schema({
             PalletPosition:{type:Number,min:0},
             StorageCharges:{type:Number,min:0},
             HandlingCharges:{type:Number,min:0}   
-        }
+        },
+        ColdStorageImage:[String],
     }
 },
 {
