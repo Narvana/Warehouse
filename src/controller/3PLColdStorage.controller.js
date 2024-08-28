@@ -148,7 +148,19 @@ const UpdatePLColdStorage= async(req,res,next)=>{
         return next(ApiErrors(401,"Unauthenticaed User. You are not allowed to add products"));
     }
 
+    const id=req.query.id;
+
+    if(!id)
+    {
+        return next(ApiErrors(400,"Provide id of the 3PL Cold Storage that you want to updated"));
+    }
     try {
+        const PLColdStorage=await ThreePLColdstorage.findById(id);
+        if(!PLColdStorage)
+            {
+                return next(ApiErrors(404,"No 3PL ColdStorage found with this id"));
+            }
+    
         const {company_details,cold_storage_details, base64}=req.body;
 
         let ColdStorageImage=[];
@@ -168,36 +180,35 @@ const UpdatePLColdStorage= async(req,res,next)=>{
             )
         }
 
-        const id= req.query.id;
-
-        const PLColdStorage=await ThreePLColdstorage.findById(id);
-
-        
         if(imageURL.length > 0)
         {
             ColdStorageImage = [...req.body.
                 cold_storage_details.ColdStorageImage,...imageURL];            
         }
-        else
+        else if(req.body.cold_storage_details && req.body.cold_storage_details.ColdStorageImage)
         {
-            ColdStorageImage = [...req.body.cold_storage_details.ColdStorageImage];
+            // return res.json('Hello');
+            if(req.body.cold_storage_details.ColdStorageImage.length > 0)
+            {
+                ColdStorageImage = [...req.body.cold_storage_details.ColdStorageImage];
+            }
+            else{
+                return next(ApiErrors(400,'Your Cold Storage Image section is Empty please Upload some ColdStorage image'));
+            }
         }    
 
-        cold_storage_details.ColdStorageImage=[...ColdStorageImage];
-        
-        return res.json(PLColdStorage.cold_storage_details);
+        // return res.json(PLColdStorage.cold_storage_details);
 
-
-        if((company_details ? Object.keys(company_details).length > 0 : null ) || (cold_storage_details ? Object.keys(cold_storage_details).length > 0 : null)){
+        if(Object.keys(company_details || {} ).length > 0 || Object.keys(cold_storage_details || {}).length > 0){
         
             if(company_details)
             {
-                PLColdStorage.company_details= {...PLColdStorage.company_details, ...company_details}
+                PLColdStorage.company_details= {...PLColdStorage.company_details.toObject(), ...company_details}
             }
             if(cold_storage_details)
             {
-                return res.json(PLColdStorage.cold_storage_details);
-                PLColdStorage.cold_storage_details = {...PLColdStorage.cold_storage_details, ...cold_storage_details}
+                cold_storage_details.ColdStorageImage=[...ColdStorageImage];
+                PLColdStorage.cold_storage_details = {...PLColdStorage.cold_storage_details.toObject(), ...cold_storage_details}
             }
 
             await PLColdStorage.validate();
@@ -209,6 +220,7 @@ const UpdatePLColdStorage= async(req,res,next)=>{
               }
               return next(ApiResponses(200,UpdatedPLColdStorage ,'3PL Cold Storage updated successfully'));
         }
+        return next(ApiErrors(400,'Provide the data that you want to updated'));
     } catch (error) {
         if(error.name === 'ValidationError')
             {
