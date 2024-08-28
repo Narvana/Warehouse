@@ -5,7 +5,7 @@ const mongoose = require('mongoose');
 const ApiErrors=require('../utils/ApiResponse/ApiErrors');
 const ApiResponses=require('../utils/ApiResponse/ApiResponse');
 const {uploadToFirebase} = require('../middleware/ImageUpload/firebaseConfig');
-
+const {uploadBase64ToFirebase} = require('../middleware/ImageUpload/firebaseConfig');
 
 // 3PL Warehouse CRUD
 const Add3PLWarehouse=async(req,res,next)=>{
@@ -146,25 +146,70 @@ const UpdatePLWarehouse= async(req,res,next)=>{
     {
         return next(ApiErrors(401,"Unauthenticaed User. You are not allowed to add products"));
     }
-    if(req.user.role !== req.role)
+
+    const id=req.query.id;
+
+    if(!id)
     {
-        return next(ApiErrors(403,"Unauthorized User. Only user assign with Warehouse role can access this"));
+        return next(ApiErrors(400,"Provide id of the 3PL Warehouse that you want to updated"));
     }
-
     try {
-        const {company_details,warehouse_details}=req.body
-        
-        const PLWarehouse=await ThreePLWarehouse.findById({_id:id});
 
-        if((company_details ? Object.keys(company_details).length > 0 : null ) || (warehouse_details ? Object.keys(warehouse_details).length > 0 : null)){
-        
+        const PLWarehouse=await ThreePLWarehouse.findById(id);
+        if(!PLWarehouse)
+        {
+            return next(ApiErrors(404,"No 3PL Warehouse found with this id"));
+        }
+
+
+        const {company_details,warehouse_details,base64}=req.body
+
+        let WarehouseImage=[];
+        let imageURL=[]
+        let link;
+        let uploadResult;
+
+        if(base64 && base64.length>0){
+            await Promise.all(
+                base64.map(async (file)=>{
+                    uploadResult = await uploadBase64ToFirebase(file);
+                    // return res.json(uploadResult);
+
+                    link = uploadResult;
+                    imageURL.push(link);
+                })
+            )
+        }
+
+
+        if(imageURL.length > 0)
+            {
+                WarehouseImage = [...req.body.
+                    warehouse_details.WarehouseImage,...imageURL];            
+            }
+            else if(req.body.warehouse_details && req.body.
+                warehouse_details.WarehouseImage)
+            {
+                // return res.json('Hello');
+                if(req.body.warehouse_details.WarehouseImage.length > 0)
+                {
+                    WarehouseImage = [...req.body.
+                        warehouse_details.WarehouseImage];
+                }
+                else{
+                    return next(ApiErrors(400,'Your Warehouse Image section is Empty please Upload some 3PL Warehouse image'));
+                }
+            }    
+    
+        if(Object.keys(company_details || {}).length > 0 || Object.keys(warehouse_details || {}).length > 0){
             if(company_details)
             {
-                PLWarehouse.company_details= {...PLWarehouse.company_details, ...company_details}
+                PLWarehouse.company_details= {...PLWarehouse.company_details.toObject(), ...company_details}
             }
             if(warehouse_details)
             {
-                PLWarehouse.warehouse_details = {...PLWarehouse.warehouse_details, ...warehouse_details}
+                warehouse_details.WarehouseImage=[...WarehouseImage];
+                PLWarehouse.warehouse_details = {...PLWarehouse.warehouse_details.toObject(), ...warehouse_details}
             }
 
             await PLWarehouse.validate();
@@ -176,6 +221,7 @@ const UpdatePLWarehouse= async(req,res,next)=>{
               }
               return next(ApiResponses(200,UpdatedPLWarehouse ,'3PL Warehouse updated successfully'));
         }
+        return next(ApiErrors(400,'Provide the data that you want to updated'));
     } catch (error) {
         if(error.name === 'ValidationError')
             {
