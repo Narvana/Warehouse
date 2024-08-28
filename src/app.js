@@ -7,8 +7,10 @@ const mongoose=require('mongoose');
 const multer=require('multer');
 
 
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(bodyParser.json());
+// app.use(bodyParser.urlencoded({ extended: false }));
+// app.use(bodyParser.json());
+app.use(bodyParser.json({ limit: '50mb' })); // Increase to a reasonable size
+app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 // app.use(express.json({limit:"16kb"}));
 // app.use(express.urlencoded({extended:false},{limit:"16kb"}))
 
@@ -29,8 +31,7 @@ app.use(cors({
 
 
 // port
-const port=8081;
-// process.env.PORT || 8081;
+const port=8081; // process.env.PORT || 8081;
 
 
 // database
@@ -53,11 +54,16 @@ app.get('/test/database',(req,res)=>{
 // route
 const registerRoute=require('./route/register.route');
 const warehouseRoute=require('./route/warehouse.route');
+const PLWarehouseRoute=require('./route/3PLWarehouse.route');
+const PLColdStorageRoute=require('./route/3PLColdstorage.route');
 app.use('/api',registerRoute);
 app.use('/api',warehouseRoute);
+app.use('/api',PLWarehouseRoute);
+app.use('/api',PLColdStorageRoute);
+
 
 app.get('/',(req,res)=>{
-    res.send('Welcome to Warehouseing');
+    res.send('Welcome to Warehousing');
 })
 
 app.get('/test/port',(req,res,next)=>{
