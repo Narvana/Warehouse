@@ -96,7 +96,7 @@ app.use((err, req, res, next) => {
                 status:0,
                 data:"",
                 statusCode : 413,
-                message:'File size exceeds the limit, Upload an image of 1MB',
+                message:'File size exceeds the limit, Upload an image of 5 MB',
               });
             //  res.status(413).json({ message: 'File size exceeds the limit, Upload an image of 1MB' });
         }
