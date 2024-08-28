@@ -146,6 +146,13 @@ const UpdateWarehouse=async(req,res,next)=>{
     }
     try 
     {
+
+        const warehouse=await Warehouse.findById(id);
+        if(!warehouse)
+        {
+            return next(ApiErrors(404,"No Warehouse found with this id"));
+        }
+
         const {basicInfo, layout, floorRent,base64} = req.body;
 
         let wareHouseImage=[];
@@ -172,16 +179,23 @@ const UpdateWarehouse=async(req,res,next)=>{
         }
 
 
-        const warehouse=await Warehouse.findById(id);
-
         if(imageURL.length > 0)
         {
             // req.body.wareHouseImage = [];
             wareHouseImage = [...req.body.wareHouseImage,...imageURL];            
         }
-        else
+        else if(req.body.wareHouseImage )
         {
-            wareHouseImage = [...req.body.wareHouseImage];
+            if(req.body.wareHouseImage.length > 0)
+            {
+                wareHouseImage = [...req.body.wareHouseImage];          
+                // return res.json('hello');
+            }
+            else
+            {
+                return next(ApiErrors(400,'Your Warehouse Image section is Empty please Upload some Warehouse image'));
+            }
+
         }
 
         if(Object.keys(basicInfo || {}).length > 0 || Object.keys(layout || {}).length > 0 || Object.keys(floorRent || {}).length > 0 || wareHouseImage.length > 0 )
