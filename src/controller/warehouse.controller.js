@@ -14,8 +14,6 @@ const AddWareHouse=async(req,res,next)=>{
 
     const {basicInfo,layout,floorRent}=req.body
 
-    // const {warehouseID}=req.params;
-
     const checkUser=await Register.findOne({_id:req.user.id});
 
     if(!checkUser)
@@ -32,9 +30,6 @@ const AddWareHouse=async(req,res,next)=>{
     {
         return next(ApiErrors(403,"Unauthorized User. Only user assign with Warehouse role can access this"));
     }
-    if(!basicInfo || !layout || !floorRent){
-        return next(ApiErrors(400,`All Feilds are required`));
-    } 
     try {
         let imageURL=[]
         let link;
@@ -47,12 +42,12 @@ const AddWareHouse=async(req,res,next)=>{
                     
                     uploadResult = await uploadToFirebase(file);
                   
-                    link = uploadResult;
+                    link = uploadResult; 
                     imageURL.push(link);
                 })
             )
          }else{
-            return next(ApiErrors(400,"No file uploaded. Please upload some pictures"));
+            return next(ApiErrors(400,"No Image uploaded. Please upload some Warehouse pictures"));
          }
 
         

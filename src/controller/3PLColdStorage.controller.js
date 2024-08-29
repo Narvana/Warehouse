@@ -33,24 +33,24 @@ const Add3PLColdStorage=async(req,res,next)=>{
     {
 
         let PL;
-        // let imageURL = [];
-        // let uploadResult;
-        // let link;
+        let imageURL = [];
+        let uploadResult;
+        let link;
     
-            // if(req.files && req.files['cold_storage_details[ColdStorageImage]'] && req.files['cold_storage_details[ColdStorageImage]'].length > 0) {
-            //     await Promise.all(
-            //         req.files['cold_storage_details[ColdStorageImage]'].map(async (file) => {
-            //             uploadResult = await uploadToFirebase(file);
-            //             link = uploadResult;
-            //             imageURL.push(link);
-            //         })
-            //     );
-            // } 
-            // else {
-            //     return next(ApiErrors(400, "No file uploaded. Please upload some pictures"));
-            // }
+            if(req.files && req.files['cold_storage_details[ColdStorageImage]'] && req.files['cold_storage_details[ColdStorageImage]'].length > 0) {
+                await Promise.all(
+                    req.files['cold_storage_details[ColdStorageImage]'].map(async (file) => {
+                        uploadResult = await uploadToFirebase(file);
+                        link = uploadResult;
+                        imageURL.push(link);
+                    })
+                );
+            } 
+            else {
+                return next(ApiErrors(400, "No image uploaded. Please upload some 3PL Coldstorage pictures"));
+            }
         
-            // cold_storage_details.ColdStorageImage = imageURL;
+            cold_storage_details.ColdStorageImage = imageURL;
 
         PL = new ThreePLColdstorage({
             wareHouseLister: req.user.id,

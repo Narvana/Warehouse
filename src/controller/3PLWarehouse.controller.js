@@ -27,9 +27,6 @@ const Add3PLWarehouse=async(req,res,next)=>{
     {
         return next(ApiErrors(403,"Unauthorized User. Only user assign with Warehouse role can access this"));
     }
-    if(!company_details || !warehouse_details){
-        return next(ApiErrors(400,`All Feilds are required`));
-    } 
     try 
     {
         let PL;
@@ -46,7 +43,7 @@ const Add3PLWarehouse=async(req,res,next)=>{
                     })
                 );
             } else {
-                return next(ApiErrors(400, "No file uploaded. Please upload some pictures"));
+                return next(ApiErrors(400, "No Image uploaded. Please upload some 3PL Warehouse pictures"));
             }
         
             warehouse_details.WarehouseImage = imageURL;
