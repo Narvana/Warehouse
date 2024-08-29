@@ -1,20 +1,21 @@
 const mongoose=require('mongoose');
 const validator=require('validator');
+const uniqueValidator = require('mongoose-unique-validator');
 
 const ContactSchema= new mongoose.Schema({
     name:{
         type: String,
-        required: [true, 'Name is required for Warehouse Contact']
+        required: [true, 'Name is required for 3PL Warehouse Contact']
     },
     email:{
         type: String,
-        required: [true, 'Email is required for Warehouse Contact'],
+        required: [true, 'Email is required for 3PL Warehouse Contact'],
         unique: true,
         trim:true
     },
     mobileNo:{
         type: String,
-        required: [true, 'Mobile No is required for Warehouse Contact'],
+        required: [true, 'Mobile No is required for 3PL Warehouse Contact'],
         unique: true,
         trim:true,
         validate: {
@@ -27,7 +28,10 @@ const ContactSchema= new mongoose.Schema({
     },
     contact_type:{
         type: String,
-        enum:['DEFAULT','BUSINESS','SHIPPING'],
+        enum: {
+            values: ['DEFAULT','BUSINESS','SHIPPING'],
+            message: '{VALUE} is not a valid Contact Type. It must be DEFAULT, BUSINESS Or SHIPPING'
+        },
     }
 })
 
@@ -40,29 +44,33 @@ const AddressSchema= new mongoose.Schema({
     },
     area:{
         type: String,
-        required: [true, 'Area is required for Warehouse Address'],
+        required: [true, 'Area is required for 3PL Warehouse Address'],
     },
     city:{
         type: String,
-        required: [true, 'City is required for Warehouse Address'],
+        required: [true, 'City is required for 3PL Warehouse Address'],
     },
     state:{
         type: String,
-        required: [true, 'State is required for Warehouse Address'],
+        required: [true, 'State is required for 3PL Warehouse Address'],
     },
     pincode: {
         type: Number,
         required: [true,'Pincode is required'],
+        minlenth:[6,'Pincode Number cannot be less than 6 digit'],
         maxlength:[6,'Pincode number cannot excced 6 digit']
     },
     addressType:{
         type:String,
-        enum:['BILLING','BUSINESS','SHIPPING','WAREHOUSE']
+        enum: {
+            values: ['BILLING','BUSINESS','SHIPPING','WAREHOUSE'],
+            message: '{VALUE} is not a valid Address Type. It must be BILLING, BUSINESS, SHIPPING Or WAREHOUSE'
+        },
     }
 })
 
 const ThreePLWarehouseSchema= new mongoose.Schema({
-    wareHouseLister:{
+    PLWareHouseLister:{
         type:mongoose.Schema.Types.ObjectId,
         ref:'Register'
     },
@@ -88,7 +96,7 @@ const ThreePLWarehouseSchema= new mongoose.Schema({
         },
         CIN: {
                 type: String,
-                required: [true, 'Cin is required for Company Details'],
+                required: [true, 'CIN is required for Company Details'],
                 trim: true,
                 unique: true,
                 validate: {
@@ -101,7 +109,7 @@ const ThreePLWarehouseSchema= new mongoose.Schema({
             },
             contact_name:{
             type: String,
-            required: true,
+            required: [true, 'Contact Name is required for Company Details'],
             },
             mobileNo:{
                 type: String,
@@ -129,8 +137,24 @@ const ThreePLWarehouseSchema= new mongoose.Schema({
     },
 
     warehouse_details:{
-        warehouseContact: [ContactSchema],
-        warehouseAddress: [AddressSchema],
+        warehouseContact: {
+            type:[ContactSchema],
+            validate:{
+                validator:function(v){
+                    return v && v.length>0;
+                },
+                message:'At least One Warehouse Contact is required for Warehouse Details',
+            }
+        },
+        warehouseAddress: {
+            type: [AddressSchema],
+            validate:{
+                validator: function(v){
+                    return v && v.length>0
+                },
+                message:'At least one Warehouse Address is required for Warehouse Details',
+            }
+        },
         features: [String],  
         valueAddedServices: [String], 
         otherDetails: {
@@ -157,7 +181,15 @@ const ThreePLWarehouseSchema= new mongoose.Schema({
             StorageMGMTCharges:{type:Number,min:0},
             HandlingCharges:{type:Number,min:0}
         },
-        WarehouseImage:[String]
+        WarehouseImage:{ 
+            type:[String],
+            validate:{
+                validator: function(v){
+                    return v && v.length > 0;
+                },
+                message:'Atleast 1 3PL Warehouse Image is required'
+            }
+        }
     },
 },
 {
@@ -165,6 +197,7 @@ const ThreePLWarehouseSchema= new mongoose.Schema({
 }
 );
 
+ThreePLWarehouseSchema.plugin(uniqueValidator, { message: 'Error, expected {PATH} to be unique. The value {VALUE} is already taken.' });
 
 const ThreePLWarehouse= mongoose.model('ThreePLWarehouse',ThreePLWarehouseSchema);
 
