@@ -3,16 +3,6 @@ const validator=require('validator');
 const uniqueValidator = require('mongoose-unique-validator');
 
 const ContactSchema= new mongoose.Schema({
-    name:{
-        type: String,
-        required: [true, 'Name is required for 3PL Warehouse Contact']
-    },
-    email:{
-        type: String,
-        required: [true, 'Email is required for 3PL Warehouse Contact'],
-        unique: true,
-        trim:true
-    },
     mobileNo:{
         type: String,
         required: [true, 'Mobile No is required for 3PL Warehouse Contact'],
@@ -25,6 +15,16 @@ const ContactSchema= new mongoose.Schema({
             },
             message: 'Mobile number must be a 10-digit number'
         }
+    },
+    email:{
+        type: String,
+        required: [true, 'Email is required for 3PL Warehouse Contact'],
+        unique: true,
+        trim:true
+    },
+    name:{
+        type: String,
+        required: [true, 'Name is required for 3PL Warehouse Contact']
     },
     contact_type:{
         type: String,
@@ -42,17 +42,12 @@ const AddressSchema= new mongoose.Schema({
     line2:{
         type: String,
     },
-    area:{
-        type: String,
-        required: [true, 'Area is required for 3PL Warehouse Address'],
-    },
-    city:{
-        type: String,
-        required: [true, 'City is required for 3PL Warehouse Address'],
-    },
-    state:{
-        type: String,
-        required: [true, 'State is required for 3PL Warehouse Address'],
+    addressType:{
+        type:String,
+        enum: {
+            values: ['BILLING','BUSINESS','SHIPPING','WAREHOUSE'],
+            message: '{VALUE} is not a valid Address Type. It must be BILLING, BUSINESS, SHIPPING Or WAREHOUSE'
+        },
     },
     pincode: {
         type: Number,
@@ -60,13 +55,18 @@ const AddressSchema= new mongoose.Schema({
         minlenth:[6,'Pincode Number cannot be less than 6 digit'],
         maxlength:[6,'Pincode number cannot excced 6 digit']
     },
-    addressType:{
-        type:String,
-        enum: {
-            values: ['BILLING','BUSINESS','SHIPPING','WAREHOUSE'],
-            message: '{VALUE} is not a valid Address Type. It must be BILLING, BUSINESS, SHIPPING Or WAREHOUSE'
-        },
-    }
+    state:{
+        type: String,
+        required: [true, 'State is required for 3PL Warehouse Address'],
+    },
+    city:{
+        type: String,
+        required: [true, 'City is required for 3PL Warehouse Address'],
+    },
+    area:{
+        type: String,
+        required: [true, 'Area is required for 3PL Warehouse Address'],
+    },
 })
 
 const ThreePLWarehouseSchema= new mongoose.Schema({
@@ -75,86 +75,8 @@ const ThreePLWarehouseSchema= new mongoose.Schema({
         ref:'Register'
     },
 
-    company_details:
-    {
-        company_name:{
-            type:String,
-            required:[true, 'Company Name is required for Company Details']
-        },
-        GST_no:{
-            type: String,
-                required: [true, 'GST number is required for Company Details'],
-                trim: true,
-                unique: true,
-                validate: {
-                    validator: function(value) {
-                        // Ensure the GST number is alphanumeric and has a length of up to 15 characters
-                        return /^[a-zA-Z0-9]{15}$/.test(value);
-                    },
-                    message: 'GST number must be alphanumeric and must be 15 characters'
-                }
-        },
-        CIN: {
-                type: String,
-                required: [true, 'CIN is required for Company Details'],
-                trim: true,
-                unique: true,
-                validate: {
-                    validator: function(value) {
-                        // Ensure CIN is a 21-character alphanumeric string
-                        return /^[A-Za-z0-9]{21}$/.test(value);
-                    },
-                    message: 'CIN must be a 21-character alphanumeric code'
-                }
-            },
-            contact_name:{
-            type: String,
-            required: [true, 'Contact Name is required for Company Details'],
-            },
-            mobileNo:{
-                type: String,
-                required: [true, 'Mobile No is required for Contact details'],
-                unique: true,
-                trim:true,
-                validate: {
-                    validator: function(value) {
-                        // Ensure the phone number is 10 digits long
-                        return /^[0-9]{10}$/.test(value);
-                    },
-                    message: 'Mobile number must be a 10-digit number'
-                }
-            },
-            email:{
-                type: String,
-                required:  [true, 'Email is required for Contact details'],
-                unique: true,
-                trim:true
-            },
-            service_type:{
-                type:String,
-                default:'WAREHOUSE'
-            }
-    },
-
     warehouse_details:{
-        warehouseContact: {
-            type:[ContactSchema],
-            validate:{
-                validator:function(v){
-                    return v && v.length>0;
-                },
-                message:'At least One Warehouse Contact is required for Warehouse Details',
-            }
-        },
-        warehouseAddress: {
-            type: [AddressSchema],
-            validate:{
-                validator: function(v){
-                    return v && v.length>0
-                },
-                message:'At least one Warehouse Address is required for Warehouse Details',
-            }
-        },
+
         features: [String],  
         valueAddedServices: [String], 
         otherDetails: {
@@ -189,7 +111,87 @@ const ThreePLWarehouseSchema= new mongoose.Schema({
                 },
                 message:'Atleast 1 3PL Warehouse Image is required'
             }
-        }
+        },
+
+        warehouseAddress: {
+            type: [AddressSchema],
+            validate:{
+                validator: function(v){
+                    return v && v.length>0
+                },
+                message:'At least one Warehouse Address is required for Warehouse Details',
+            }
+        },
+        warehouseContact: {
+            type:[ContactSchema],
+            validate:{
+                validator:function(v){
+                    return v && v.length>0;
+                },
+                message:'At least One Warehouse Contact is required for Warehouse Details',
+            }
+        },
+
+    },
+    company_details:
+    {
+        service_type:{
+            type:String,
+            default:'WAREHOUSE'
+        },
+        email:{
+            type: String,
+            required:  [true, 'Email is required for Contact details'],
+            unique: true,
+            trim:true
+        },
+        mobileNo:{
+            type: String,
+            required: [true, 'Mobile No is required for Contact details'],
+            unique: true,
+            trim:true,
+            validate: {
+                validator: function(value) {
+                    // Ensure the phone number is 10 digits long
+                    return /^[0-9]{10}$/.test(value);
+                },
+                message: 'Mobile number must be a 10-digit number'
+            }
+        },
+        contact_name:{
+        type: String,
+        required: [true, 'Contact Name is required for Company Details'],
+        },
+        CIN: {
+            type: String,
+            required: [true, 'CIN is required for Company Details'],
+            trim: true,
+            unique: true,
+            validate: {
+                validator: function(value) {
+                    // Ensure CIN is a 21-character alphanumeric string
+                    return /^[A-Za-z0-9]{21}$/.test(value);
+                },
+                message: 'CIN must be a 21-character alphanumeric code'
+            }
+        },
+        GST_no:{
+            type: String,
+                required: [true, 'GST number is required for Company Details'],
+                trim: true,
+                unique: true,
+                validate: {
+                    validator: function(value) {
+                        // Ensure the GST number is alphanumeric and has a length of up to 15 characters
+                        return /^[a-zA-Z0-9]{15}$/.test(value);
+                    },
+                    message: 'GST number must be alphanumeric and must be 15 characters'
+                }
+        },    
+        company_name:{
+            type:String,
+            required:[true, 'Company Name is required for Company Details']
+        },
     },
 },
 {
