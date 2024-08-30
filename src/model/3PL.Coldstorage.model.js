@@ -70,7 +70,7 @@ const AddressSchema= new mongoose.Schema({
 })
 
 const ThreePLColdstorageSchema= new mongoose.Schema({
-    PLColdStorageLister:{
+    warehouseLister:{
         type:mongoose.Schema.Types.ObjectId,
         ref:'Register'
     },

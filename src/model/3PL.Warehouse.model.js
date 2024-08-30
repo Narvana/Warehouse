@@ -70,7 +70,7 @@ const AddressSchema= new mongoose.Schema({
 })
 
 const ThreePLWarehouseSchema= new mongoose.Schema({
-    PLWareHouseLister:{
+    wareHouseLister:{
         type:mongoose.Schema.Types.ObjectId,
         ref:'Register'
     },
