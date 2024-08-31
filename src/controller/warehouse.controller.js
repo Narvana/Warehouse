@@ -26,10 +26,10 @@ const AddWareHouse=async(req,res,next)=>{
     {
         return next(ApiErrors(401,"Unauthenticaed User. You are not allowed to add products"));
     }
-    if(req.user.role !== req.role)
-    {
-        return next(ApiErrors(403,"Unauthorized User. Only user assign with Warehouse role can access this"));
-    }
+    // if(req.user.role !== req.role)
+    // {
+    //     return next(ApiErrors(403,"Unauthorized User. Only user assign with Warehouse role can access this"));
+    // }
     try {
         let imageURL=[]
         let link;
@@ -46,8 +46,6 @@ const AddWareHouse=async(req,res,next)=>{
                     imageURL.push(link);
                 })
             )
-         }else{
-            return next(ApiErrors(400,"No Image uploaded. Please upload some Warehouse pictures"));
          }
 
         
@@ -69,18 +67,10 @@ const AddWareHouse=async(req,res,next)=>{
             const errorMessages = Object.values(error.errors).map(error => error.message);
             return next(ApiErrors(500,errorMessages[0]));            
         }
-        else if(error.code === 11000)
-        {
-            if(error.errorResponse.errmsg.includes('contactNo'))
-            {
-                return next(ApiErrors(500, `This Contact no is already taken`));
-            }else if(error.errorResponse.errmsg.includes('email'))
-            {
-                return next(ApiErrors(500, `This Email is already taken`));
-            }
-        }
         else
         {
+            console.log(`Internal Serve Error, Error -: ${error} `);
+            
             return next(ApiErrors(500,`Internal Serve Error, Error -: ${error} `));
         }
     }
@@ -90,12 +80,22 @@ const getListerWarehouse=async(req,res,next)=>{
     
     const id=req.user.id;
     
-    const warehouse=await Warehouse.find({ wareHouseLister: new mongoose.Types.ObjectId(id) });
-
-    if (warehouse.length === 0) {
-        return next(ApiErrors(400,`No warehouse found with this wareHouseLister ID.`));
+    try {
+        const warehouse=await Warehouse.find({ wareHouseLister: new mongoose.Types.ObjectId(id) }).populate({
+            path:"wareHouseLister",
+            select:("-password -refreshToken")
+        });
+    
+        if (warehouse.length === 0) {
+            return next(ApiErrors(400,`No warehouse found with this wareHouseLister ID.`));
+        }
+        return next(ApiResponses(200,warehouse,'WareHouse List'));
+            
+    } catch (error) {
+        console.log(error);
+        
+        return next(ApiErrors(500, `Error retrieving warehouse: ${error.message}`));   
     }
-    return next(ApiResponses(200,warehouse,'WareHouse List'));
 
 }
 
@@ -115,7 +115,7 @@ const singleWareHouse=async(req,res,next)=>{
         }
         return next(ApiResponses(200,SingleWarehouse,'WareHouse Detail'));        
     } catch (error) {
-        return next(ApiErrors(500, `Error retrieving warehouse: ${error}`));
+        return next(ApiErrors(500, `Error retrieving warehouse: ${error.message}`));
     }
 }
 
@@ -141,14 +141,13 @@ const UpdateWarehouse=async(req,res,next)=>{
     }
     try 
     {
-
         const warehouse=await Warehouse.findById(id);
         if(!warehouse)
         {
             return next(ApiErrors(404,"No Warehouse found with this id"));
         }
 
-        const {basicInfo, layout, floorRent,base64} = req.body;
+        const {basicInfo, layout, floorRent, base64} = req.body;
 
         let wareHouseImage=[];
         let imageURL=[]
@@ -158,14 +157,7 @@ const UpdateWarehouse=async(req,res,next)=>{
         if(base64 && base64.length>0){
             await Promise.all(
                 base64.map(async (file)=>{
-                    // const buffer = file.buffer; // Assuming single file upload
-                    // const mimeType = file.mimetype; // Image MIME type
-                    
-                    // const base64Image = `data:${mimeType};base64,${buffer.toString('base64')}`;
-
-
                     uploadResult = await uploadBase64ToFirebase(file);
-                    // return res.json(uploadResult);
 
                     link = uploadResult;
                     imageURL.push(link);
@@ -176,24 +168,33 @@ const UpdateWarehouse=async(req,res,next)=>{
 
         if(imageURL.length > 0)
         {
-            // req.body.wareHouseImage = [];
             wareHouseImage = [...req.body.wareHouseImage,...imageURL];            
         }
-        else if(req.body.wareHouseImage )
+        else if(req.body.wareHouseImage)
         {
             if(req.body.wareHouseImage.length > 0)
             {
                 wareHouseImage = [...req.body.wareHouseImage];          
-                // return res.json('hello');
             }
             else
             {
                 return next(ApiErrors(400,'Your Warehouse Image section is Empty please Upload some Warehouse image'));
             }
-
+        }
+        else if(!req.body.wareHouseImage)
+        {
+            wareHouseImage=warehouse.wareHouseImage;
         }
 
-        if(Object.keys(basicInfo || {}).length > 0 || Object.keys(layout || {}).length > 0 || Object.keys(floorRent || {}).length > 0 || wareHouseImage.length > 0 )
+        if(
+            Object.keys(basicInfo || {}).length > 0 
+            || 
+            Object.keys(layout || {}).length > 0 
+            || 
+            Object.keys(floorRent || {}).length > 0 
+            || 
+            wareHouseImage.length > 0 
+        )
         {   
             if (basicInfo) {
                 warehouse.basicInfo = { ...warehouse.basicInfo.toObject(), ...basicInfo };
@@ -212,9 +213,7 @@ const UpdateWarehouse=async(req,res,next)=>{
                 warehouse.wareHouseImage = [...wareHouseImage];
             }
 
-            await warehouse.validate();
-
-            // const updatedWarehouse = await warehouse.save();
+            await warehouse.validate(); 
 
             const updatedWarehouse = await Warehouse.findByIdAndUpdate(
                 id,
@@ -231,37 +230,26 @@ const UpdateWarehouse=async(req,res,next)=>{
                     // runValidators: !needsComplexUpdate, // Skip validation if it has already been done
                 }
             );
-              
-            if (!updatedWarehouse) {
+  
+             if (!updatedWarehouse) {
                 return res.status(404).json({ error: 'Warehouse not found' });
               }
               return next(ApiResponses(200,updatedWarehouse ,'Warehouse updated successfully'));
         }         
         return next(ApiErrors(400,'Provide the data that you want to updated'));
-        
+
     } catch (error) 
     {
 
-        // return next(ApiErrors(500,`Internal Server Error, ${error}`))
         if(error.name === 'ValidationError')
             {
                 const errorMessages = Object.values(error.errors).map(error => error.message);
                 return next(ApiErrors(500,errorMessages[0]));            
             }
-            else if(error.code === 11000)
-            {
-                if(error.errorResponse.errmsg.includes('contactNo'))
-                {
-                    return next(ApiErrors(500, `This Contact no is already taken`));
-                }else if(error.errorResponse.errmsg.includes('email'))
-                {
-                    return next(ApiErrors(500, `This Email is already taken`));
-                }
-            }
             else
             {
                 console.error('Error updating warehouse:', error);
-                return next(ApiErrors(500,`Internal Serve Error, Error -: ${error} `));
+                return next(ApiErrors(500,`Internal Serve Error, Error -: ${error.message} `));
             }    
     }
 }
@@ -295,7 +283,7 @@ const DeleteWarehouse=async(req,res,next)=>{
         }        
     } catch (error) {
         console.error('Error updating warehouse:', error);
-        return next(ApiErrors(500,`Internal Serve Error, Error -: ${error} `));  
+        return next(ApiErrors(500,`Internal Serve Error, Error -: ${error.message} `));  
     }   
 }
 
@@ -314,7 +302,8 @@ const allWareHouse=async(req,res,next)=>{
 
         return next(ApiResponses(200, { warehouses, PLColdStorage, PLWarehouse },'List of All Warehouse'))
     } catch (error) {
-        return next(ApiErrors(500,`Internal Serve Error, Error -: ${error} `)); 
+        console.error('Internal Server Error:', error);
+        return next(ApiErrors(500,`Internal Serve Error, Error -: ${error.message} `)); 
     }
 }
 
@@ -527,77 +516,4 @@ module.exports={
     searchWareHouseAll,
     Add3PL,
 }
-
-// {
-//     "basicInfo": {
-//         "name": "ABCD",
-//         "contactNo": "2234567892",
-//         "email": "abcdefh@gmail.com",
-//         "ownerShipType": "Owner",
-//         "locality": "Industrial Area",
-//         "city": "CityName",
-//         "state": "StateName",
-//         "address": "123 Lane",
-//         "pincode": 1234567
-//     },
-//     "layout": {
-//         "warehouseType": "RCC",
-//         "buildUpArea": 5000,
-//         "totalPlotArea": 10000,
-//         "totalParkingArea": 2000,
-//         "plotStatus": "Industrial",
-//         "listingFor": "Selling",
-//         "plinthHeight": 5,
-//         "door": 10,
-//         "electricity": 400,
-//         "additionalDetails": [
-//             "Toilet",
-//             "Close to highway",
-//             "24/7 security"
-//         ]
-//     },
-//     "floorRent": {
-//         "floors": [
-//             {
-//                 "floor": "Ground",
-//                 "area": 2500,
-//                 "height": 29,
-//                 "length": 50,
-//                 "breadth": 50,
-//                 "_id": "66b338cb3b673a52ad57946b"
-//             },
-//             {
-//                 "floor": "First",
-//                 "area": 2500,
-//                 "height": 20,
-//                 "length": 50,
-//                 "breadth": 50,
-//                 "_id": "66b338cb3b673a52ad57946c"
-//             }
-//         ],
-//         "warehouseDirection": "NorthEast",
-//         "roadAccess": "Main Road Access",
-//         "expectedRent": 10000,
-//         "expectedDeposit": 10000,
-//         "warehouseDescription": "Spacious warehouse with ample parking"
-//     },
-//     "_id": "66b338cb3b673a52ad57946a",
-//     "wareHouseLister": {
-//         "_id": "66b33763cea6a137d4d3ffff",
-//         "firstname": "Nitin",
-//         "lastname": "Singh",
-//         "username": "Nitin",
-//         "contactNo": "2234567890",
-//         "email": "Nitinn3@gmail.com",
-//         "password": "$2a$10$jZyLQHY9gPm3GZ.dd06VPu0gzjKpiQaspn/diER9h0uQZH.PMNwY2",
-//         "role": "WAREHOUSE",
-//         "__v": 0,
-//         "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY2YjMzNzYzY2VhNmExMzdkNGQzZmZmZiIsInJvbGUiOiJXQVJFSE9VU0UiLCJpYXQiOjE3MjMwMjEyMTcsImV4cCI6MTcyMzg4NTIxN30.mf7w8BlmjgFUf8Cj4FPMJKHMl12xlohUyEcxNiEZpAI"
-//     },
-//     "wareHouseImage": [
-//         "http://res.cloudinary.com/dm6yqgvm4/image/upload/v1723021514/mf7aogwlnnpdekxkxybl.jpg",
-//         "http://res.cloudinary.com/dm6yqgvm4/image/upload/v1723021515/aph03pd6bntsbobcgrai.jpg"
-//     ],
-//     "__v": 0
-// }
 
