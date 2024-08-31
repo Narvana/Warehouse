@@ -67,11 +67,25 @@ const AddWareHouse=async(req,res,next)=>{
             const errorMessages = Object.values(error.errors).map(error => error.message);
             return next(ApiErrors(500,errorMessages[0]));            
         }
+        else if(error.code === 11000)
+            {
+                const cinMatch = error.errorResponse.errmsg.match(/"([^"]+)"/);
+                console.log(cinMatch[1]);
+                if(error.errorResponse.errmsg.includes('contactNo'))
+                {
+                    console.log(error);
+                    return next(ApiErrors(500, `This Contact no is already taken -: ${cinMatch[1]}`));
+                }
+                else if(error.errorResponse.errmsg.includes('email'))
+                {
+                    return next(ApiErrors(500, `This email is already taken -: ${cinMatch[1]}`));
+                }
+            }
         else
         {
             console.log(`Internal Serve Error, Error -: ${error} `);
             
-            return next(ApiErrors(500,`Internal Serve Error, Error -: ${error} `));
+            return next(ApiErrors(500,`Internal Server Error, Error -: ${error} `));
         }
     }
 }
@@ -246,6 +260,21 @@ const UpdateWarehouse=async(req,res,next)=>{
                 const errorMessages = Object.values(error.errors).map(error => error.message);
                 return next(ApiErrors(500,errorMessages[0]));            
             }
+            else if(error.code === 11000)
+                {
+                    const cinMatch = error.errorResponse.errmsg.match(/"([^"]+)"/);
+                    console.log(cinMatch[1]);
+                    if(error.errorResponse.errmsg.includes('contactNo'))
+                    {
+                        console.log(error);
+                        return next(ApiErrors(500, `This Contact no is already taken -: ${cinMatch[1]}`));
+                    }
+                    else if(error.errorResponse.errmsg.includes('email'))
+                    {
+                        return next(ApiErrors(500, `This email is already taken -: ${cinMatch[1]}`));
+                    }
+                }
+    
             else
             {
                 console.error('Error updating warehouse:', error);

@@ -241,7 +241,7 @@ const warehouseSchema = new mongoose.Schema({
     timestamps:true
 });
 
-warehouseSchema.plugin(uniqueValidator, { message: 'Error, expected {PATH} to be unique. The value {VALUE} is already taken.' });
+// warehouseSchema.plugin(uniqueValidator, { message: 'Error, expected {PATH} to be unique. The value {VALUE} is already taken.' });
 
 const Warehouse = mongoose.model('Warehouse', warehouseSchema);
 
