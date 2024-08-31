@@ -6,6 +6,7 @@ const ApiErrors=require('../utils/ApiResponse/ApiErrors');
 const ApiResponses=require('../utils/ApiResponse/ApiResponse');
 const {uploadToFirebase} = require('../middleware/ImageUpload/firebaseConfig');
 const {uploadBase64ToFirebase} = require('../middleware/ImageUpload/firebaseConfig');
+const { refreshToken } = require('firebase-admin/app');
 
 // 3PL Warehouse CRUD
 const Add3PLWarehouse=async(req,res,next)=>{
@@ -23,10 +24,6 @@ const Add3PLWarehouse=async(req,res,next)=>{
     {
         return next(ApiErrors(401,"Unauthenticaed User. You are not allowed to add products"));
     }
-    if(req.user.role !== req.role)
-    {
-        return next(ApiErrors(403,"Unauthorized User. Only user assign with Warehouse role can access this"));
-    }
     try 
     {
         let PL;
@@ -42,16 +39,14 @@ const Add3PLWarehouse=async(req,res,next)=>{
                         imageURL.push(link);
                     })
                 );
-            } else {
-                return next(ApiErrors(400, "No Image uploaded. Please upload some 3PL Warehouse pictures"));
-            }
-        
-            warehouse_details.WarehouseImage = imageURL;
+                warehouse_details.WarehouseImage = imageURL;
+            }        
+
 
             PL = new ThreePLWarehouse({
                 wareHouseLister: req.user.id,
                 company_details,
-                warehouse_details,
+                warehouse_details, 
             });
 
         
@@ -97,19 +92,30 @@ const Add3PLWarehouse=async(req,res,next)=>{
 }
 
 const AllPLWarehouse=async(req,res,next)=>{
+
     const id=req.user.id;
-    // try {
-        ThreePLWarehouse.find({ wareHouseLister: new mongoose.Types.ObjectId(id) })
-        .populate('wareHouseLister') // Optional: populate the referenced Register data
-        .then((warehouse) => {
-            if (warehouse.length === 0) {
-                return next(ApiErrors(400,`No 3PL warehouse found with this wareHouseLister ID.`));
-            }
-            return next(ApiResponses(200,warehouse,' 3PL WareHouse List'));
-        })
-        .catch((err) => {
-            return next(ApiErrors(500,`Error finding 3PL warehouse: ${err}`));
-        });
+
+    // ThreePLWarehouse.find({ wareHouseLister: new mongoose.Types.ObjectId(id) })
+    // .populate('wareHouseLister') // Optional: populate the referenced Register data
+    // .then((warehouse) => {
+    //     if (warehouse.length === 0) {
+    //         return next(ApiErrors(400,`No 3PL warehouse found with this wareHouseLister ID.`));
+    //     }
+    //     return next(ApiResponses(200,warehouse,' 3PL WareHouse List'));
+    // })
+    // .catch((err) => {
+    //     return next(ApiErrors(500,`Error finding 3PL warehouse: ${err}`));
+    // });
+    const warehouse=await ThreePLWarehouse.find({ wareHouseLister: new mongoose.Types.ObjectId(id) }).populate({
+        path: 'wareHouseLister',
+        select: '-password -refreshToken'
+      });
+
+    if (warehouse.length === 0) {
+        return next(ApiErrors(400,`No warehouse found with this wareHouseLister ID.`));
+    }
+    return next(ApiResponses(200,warehouse,'WareHouse List'));
+
 }
 
 const singlePLWarehouse=async(req,res,next)=>{
