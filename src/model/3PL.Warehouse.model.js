@@ -199,7 +199,7 @@ const ThreePLWarehouseSchema= new mongoose.Schema({
 }
 );
 
-ThreePLWarehouseSchema.plugin(uniqueValidator, { message: 'Error, expected {PATH} to be unique. The value {VALUE} is already taken.' });
+// ThreePLWarehouseSchema.plugin(uniqueValidator, { message: 'Error, expected {PATH} to be unique. The value {VALUE} is already taken.' });
 
 const ThreePLWarehouse= mongoose.model('ThreePLWarehouse',ThreePLWarehouseSchema);
 

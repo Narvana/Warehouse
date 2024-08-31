@@ -64,24 +64,24 @@ const Add3PLWarehouse=async(req,res,next)=>{
         }
         else if(error.code === 11000)
         {
+            const cinMatch = error.errorResponse.errmsg.match(/"([^"]+)"/);
+            console.log(cinMatch[1]);
             if(error.errorResponse.errmsg.includes('mobileNo'))
             {
                 console.log(error);
-                return next(ApiErrors(500, `This Mobile no is already taken -: ${error.errorResponse.errmsg}`));
+                return next(ApiErrors(500, `This Mobile no is already taken -: ${cinMatch[1]}`));
             }else if(error.errorResponse.errmsg.includes('GST_no'))
             { 
                 console.log(error);
-                return next(ApiErrors(500, `This GST no is already taken -: ${error.errorResponse.errmsg}`));
+                return next(ApiErrors(500, `This GST no is already taken -: ${cinMatch[1]}`));
             }
             else if(error.errorResponse.errmsg.includes('CIN'))
-            {
-                console.log(error);
-                return next(ApiErrors(500, `This CIN is already taken -: ${error.errorResponse.errmsg}`));
+            {   
+                return next(ApiErrors(500, `This CIN Number is already taken -: ${cinMatch[1]}`));
             }
             else if(error.errorResponse.errmsg.includes('email'))
             {
-                console.log(error);
-                return next(ApiErrors(500, `This email is already taken -: ${error.errorResponse.errmsg}`));
+                return next(ApiErrors(500, `This email is already taken -: ${cinMatch[1]}`));
             }
         }
         else
@@ -186,29 +186,33 @@ const UpdatePLWarehouse= async(req,res,next)=>{
 
 
         if(imageURL.length > 0)
+        {
+            WarehouseImage = [...req.body.warehouse_details.WarehouseImage,...imageURL];            
+        }
+        else if(req.body.warehouse_details && req.body.
+            warehouse_details.WarehouseImage)
+        {
+            // return res.json('Hello');
+            if(req.body.warehouse_details.WarehouseImage.length > 0)
             {
                 WarehouseImage = [...req.body.
-                    warehouse_details.WarehouseImage,...imageURL];            
+                    warehouse_details.WarehouseImage];
             }
-            else if(req.body.warehouse_details && req.body.
-                warehouse_details.WarehouseImage)
-            {
-                // return res.json('Hello');
-                if(req.body.warehouse_details.WarehouseImage.length > 0)
-                {
-                    WarehouseImage = [...req.body.
-                        warehouse_details.WarehouseImage];
-                }
-                else{
-                    return next(ApiErrors(400,'Your Warehouse Image section is Empty please Upload some 3PL Warehouse image'));
-                }
-            }    
+            else{
+                return next(ApiErrors(400,'Your Warehouse Image section is Empty please Upload some 3PL Warehouse image'));
+            }
+        } else if(req.body.warehouse_details && !req.body.
+            warehouse_details.WarehouseImage){
+                WarehouseImage = PLWarehouse.warehouse_details.WarehouseImage
+            }
     
-        if(Object.keys(company_details || {}).length > 0 || Object.keys(warehouse_details || {}).length > 0){
+        if(Object.keys(company_details || {}).length > 0 || Object.keys(warehouse_details || {}).length > 0)
+        {
             if(company_details)
             {
                 PLWarehouse.company_details= {...PLWarehouse.company_details.toObject(), ...company_details}
             }
+
             if(warehouse_details)
             {
                 warehouse_details.WarehouseImage=[...WarehouseImage];
@@ -217,34 +221,61 @@ const UpdatePLWarehouse= async(req,res,next)=>{
 
             await PLWarehouse.validate();
 
-            const UpdatedPLWarehouse=await PLWarehouse.save();
+            // const UpdatedPLWarehouse=await PLWarehouse.save();
+
+            const UpdatedPLWarehouse = await ThreePLWarehouse.findByIdAndUpdate
+            (
+                id,
+                {
+                    $set:{
+                        ...(company_details ? {company_details: PLWarehouse.company_details} : {}),
+                        ...(warehouse_details ? {warehouse_details: PLWarehouse.warehouse_details} : {})
+                    },
+                },
+                {
+                 new: true,
+                }
+            );
 
             if (!UpdatedPLWarehouse) {
                 return next(ApiErrors(404,'Warehouse not found'))
-              }
-              return next(ApiResponses(200,UpdatedPLWarehouse ,'3PL Warehouse updated successfully'));
+            }
+            return next(ApiResponses(200,UpdatedPLWarehouse ,'3PL Warehouse updated successfully'));
         }
         return next(ApiErrors(400,'Provide the data that you want to updated'));
     } catch (error) {
         if(error.name === 'ValidationError')
             {
                 const errorMessages = Object.values(error.errors).map(error => error.message);
+                console.log(error);
                 return next(ApiErrors(500,errorMessages[0]));            
             }
             else if(error.code === 11000)
-            {
-                if(error.errorResponse.errmsg.includes('contactNo'))
                 {
-                    return next(ApiErrors(500, `This Contact no is already taken`));
-                }else if(error.errorResponse.errmsg.includes('email'))
-                {
-                    return next(ApiErrors(500, `This Email is already taken`));
+                    const cinMatch = error.errorResponse.errmsg.match(/"([^"]+)"/);
+                    console.log(cinMatch[1]);
+                    if(error.errorResponse.errmsg.includes('mobileNo'))
+                    {
+                        console.log(error);
+                        return next(ApiErrors(500, `This Mobile no is already taken -: ${cinMatch[1]}`));
+                    }else if(error.errorResponse.errmsg.includes('GST_no'))
+                    { 
+                        console.log(error);
+                        return next(ApiErrors(500, `This GST no is already taken -: ${cinMatch[1]}`));
+                    }
+                    else if(error.errorResponse.errmsg.includes('CIN'))
+                    {   
+                        return next(ApiErrors(500, `This CIN Number is already taken -: ${cinMatch[1]}`));
+                    }
+                    else if(error.errorResponse.errmsg.includes('email'))
+                    {
+                        return next(ApiErrors(500, `This email is already taken -: ${cinMatch[1]}`));
+                    }
                 }
-            }
             else
             {
                 console.error('Error updating warehouse:', error);
-                return next(ApiErrors(500,`Internal Serve Error, Error -: ${error}`));
+                return next(ApiErrors(500,`Internal Serve Error, Error -: ${error.message}`));
             }    
     }
 }
@@ -272,13 +303,13 @@ const DeletePLWarehouse=async(req,res,next)=>{
         const removePLWarehouse=await ThreePLWarehouse.findByIdAndDelete(id);
 
         if (removePLWarehouse){
-            return next(ApiResponses(200,"Warehouse deleted successfully"));
+            return next(ApiResponses(200,"3PL Warehouse deleted successfully"));
         } else {
             return next(ApiErrors(404,"No warehouse found with the provided ID"));
         }        
     } catch (error) {
         console.error('Error While Deleting 3PL Warehouse:', error);
-        return next(ApiErrors(500,`Internal Serve Error, Error -: ${error} `));  
+        return next(ApiErrors(500,`Internal Server Error, Error -: ${error.message} `));  
     }   
 }
 
