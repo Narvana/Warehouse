@@ -20,14 +20,17 @@ app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 const cors= require('cors');
 const helmet=require('helmet');
 
-app.use(helmet());
-
 app.use(cors({
     origin: ["http://localhost:5173","https://ware-house-five.vercel.app","https://warehouse-2.netlify.app","http://localhost:3000"],
     methods:["GET","POST","PUT","DELETE"],
     credentials:true,   
     // allowedHeaders: ['Content-Type', 'Authorization'],
 }));
+
+app.use(helmet());
+
+app.disable('x-powered-by');
+
 
 
 // port
@@ -96,7 +99,7 @@ app.use((err, req, res, next) => {
                 status:0,
                 data:"",
                 statusCode : 413,
-                message:'File size exceeds the limit, Upload an image of 5 MB',
+                message:`${err.message}, max limit is 5MB`,
               });
             //  res.status(413).json({ message: 'File size exceeds the limit, Upload an image of 1MB' });
         }
