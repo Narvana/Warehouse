@@ -121,24 +121,116 @@ const login=async(req,res,next)=>{
                .cookie("accessToken",accessToken,options)
                .cookie("refreshToken",refreshToken,options)
                .json(
-                 {
-                   user:loggedIn,
-                   accessToken,
-                   refreshToken               
-                 },
-             )
+                {
+                    user:loggedIn,
+                    accessToken,
+                    refreshToken
+                }
+                )
+                // {
+                //     "status":1,
+                //     "statuscode":200,
+                //     "data":[
+                //         {user},
+                //         {accessToken},
+                //         {refreshToken}
+                //     ],
+                //     "message":`${user.username} logged in successfully`
+                //  },
             }
         }
        }
     catch(error)
     {
-    return next(ApiErrors(500,error))
+        return next(ApiErrors(500,`${error.message}, ${error.stack}`));
     }
 
 }
 
+const profile=async(req,res,next)=>{
+    try {
+        const checkUser=await Register.findOne({_id:req.user.id}).select("-password -refreshToken");
+
+        if(!checkUser)
+        {
+            return next(ApiErrors(401,"Unauthenticaed User. Your Data do not exist in the database"));   
+        }
+        
+        if(req.user.id != checkUser._id)
+        {
+            return next(ApiErrors(401,"Unauthenticaed User. You cannot view this profile"));
+        }
+        return next(ApiResponse(201,checkUser,`Warehouse Lister ${checkUser.username} Profile`));        
+    } catch (error) {
+        console.log(`Internal Server Error: ${error}`);
+        return next(ApiErrors(500,`Internal Server Error: ${error.message}`));
+    }    
+}
+
+const update=async(req,res,next)=>{
+    const checkUser=await Register.findOne({_id:req.user.id});
+    if(!checkUser)
+    {
+        return next(ApiErrors(401,"Unauthenticaed User. Your Data do not exist in the database"));   
+    }
+    
+    if(req.user.id != checkUser._id)
+    {
+        return next(ApiErrors(401,"Unauthenticaed User. You cannot Update this profile"));
+    }
+
+
+    try {
+        const { firstname, lastname, username, contactNo, email} = req.body;
+
+        if(!firstname && !lastname && !username && !contactNo && !email)
+        {
+            return next(ApiErrors(400,`Please Enter Data that you want to update`));
+        }
+        if(req.body.password)
+        {
+            const isValidPassword=validatePassword(req.body.password)
+            if(isValidPassword)
+            {  
+               var hashedPassword=bcryptjs.hashSync(req.body.password,10);
+            }
+            else{
+               return next(ApiErrors(400,`Enter a valid password. Atleast Min 8 Character, 1 Uppercase, 1 Lowercase, 1 Special Character, 1 Number`));
+            }
+        }        
+
+       const userUpdate = await Register.findByIdAndUpdate
+       (
+            req.user.id,
+            {
+                $set:
+                {
+                    firstname: firstname,
+                    lastname: lastname,
+                    username: username, // || req.user.username,
+                    contactNo: contactNo, // || req.user.contactNo,
+                    email: email, //|| req.user.email,
+                    password : hashedPassword
+                }
+            },
+            {
+                new:true,
+                runValidators:true,
+            }
+       );
+
+        const {password, refreshToken, ...rest} = userUpdate._doc;
+        return next(ApiResponse(201,rest,"Updated Successfully"));
+
+    } catch (error) {
+        console.log(`Internal Server Error: ${error}`);
+        return next(ApiErrors(500,`Internal Server Error: ${error.message}`)); 
+    }
+}
 
 module.exports={
     SignUp,
-    login
+    login,
+    profile,
+    update
 }
