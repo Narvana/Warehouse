@@ -23,11 +23,7 @@ const Add3PLColdStorage=async(req,res,next)=>{
     }
     if(req.user.id != checkUser._id)
     {
-        return next(ApiErrors(401,"Unauthenticaed User. You are not allowed to add products"));
-    }
-    if(req.user.role !== req.role)
-    {
-        return next(ApiErrors(403,"Unauthorized User. Only user assign with Warehouse role can access this"));
+        return next(ApiErrors(401,"Unauthenticaed User. Your ID do not match with token"));
     }
     try 
     {
@@ -37,20 +33,19 @@ const Add3PLColdStorage=async(req,res,next)=>{
         let uploadResult;
         let link;
     
-            if(req.files && req.files['cold_storage_details[ColdStorageImage]'] && req.files['cold_storage_details[ColdStorageImage]'].length > 0) {
-                await Promise.all(
-                    req.files['cold_storage_details[ColdStorageImage]'].map(async (file) => {
-                        uploadResult = await uploadToFirebase(file);
-                        link = uploadResult;
-                        imageURL.push(link);
-                    })
-                );
-            } 
-            else {
-                return next(ApiErrors(400, "No image uploaded. Please upload some 3PL Coldstorage pictures"));
-            }
-        
+        if(req.files && req.files['cold_storage_details[ColdStorageImage]'] && req.files['cold_storage_details[ColdStorageImage]'].length > 0) {
+            await Promise.all(
+                req.files['cold_storage_details[ColdStorageImage]'].map(async (file) => {
+                    uploadResult = await uploadToFirebase(file);
+                    link = uploadResult;
+                    imageURL.push(link);
+                })
+            );
+
             cold_storage_details.ColdStorageImage = imageURL;
+        } 
+
+        
 
         PL = new ThreePLColdstorage({
             wareHouseLister: req.user.id,
@@ -67,52 +62,32 @@ const Add3PLColdStorage=async(req,res,next)=>{
         if(error.name === 'ValidationError')
         {
             const errorMessages = Object.values(error.errors).map(error => error.message);
-            console.log({ ERROR : error });
+            console.log(`Internal Serve Error : {error}`);
             return next(ApiErrors(500,errorMessages[0]));            
-        }
-        else if(error.code === 11000)
-        {
-            if(error.errorResponse.errmsg.includes('mobileNo'))
-            {
-                console.log(error);
-                return next(ApiErrors(500, `This Mobile no is already taken -: ${error.errorResponse.errmsg}`));
-            }else if(error.errorResponse.errmsg.includes('GST_no'))
-            { 
-                console.log(error);
-                return next(ApiErrors(500, `This GST no is already taken -: ${error.errorResponse.errmsg}`));
-            }
-            else if(error.errorResponse.errmsg.includes('CIN'))
-            {
-                console.log(error);
-                return next(ApiErrors(500, `This CIN is already taken -: ${error.errorResponse.errmsg}`));
-            }
-            else if(error.errorResponse.errmsg.includes('email'))
-            {
-                console.log(error);
-                return next(ApiErrors(500, `This email is already taken -: ${error.errorResponse.errmsg}`));
-            }
         }
         else
         {
             return next(ApiErrors(500,`Internal Serve Error, ${error}`));
         }
-    }
-   
+    }  
 }
 
 const AllPLColdStorage=async(req,res,next)=>{
     const id=req.user.id;
-    // try {
         ThreePLColdstorage.find({ wareHouseLister: new mongoose.Types.ObjectId(id) })
-        .populate('wareHouseLister') // Optional: populate the referenced Register data
+        .populate({
+            path: 'wareHouseLister',
+            select: '-password -refreshToken'
+          }) // Optional: populate the referenced Register data
         .then((coldstorage) => {
             if (coldstorage.length === 0) {
                 return next(ApiErrors(400,`No 3PL Cold Storage found with this wareHouseLister ID.`));
             }
             return next(ApiResponses(200,coldstorage,'3PL Cold Storage List'));
         })
-        .catch((err) => {
-            return next(ApiErrors(500,`Error finding 3PL ColdStorage: ${err}`));
+        .catch((error) => {
+            console.log(`Error finding 3PL ColdStorage: ${error}`);
+            return next(ApiErrors(500,`Error finding 3PL ColdStorage: ${error.message}`));
         });
 }
 
@@ -132,7 +107,8 @@ const singlePLColdStorage=async(req,res,next)=>{
         }
         return next(ApiResponses(200,SinglePLColdStorage,'3PL ColdStorage Detail'));        
     } catch (error) {
-        return next(ApiErrors(500, `Error retrieving 3PL Coldstorage: ${error}`));
+        console.log(`Error finding 3PL ColdStorage: ${error}`);
+        return next(ApiErrors(500, `Error retrieving 3PL Coldstorage: ${error.message}`));
     }
 }
 
@@ -195,9 +171,8 @@ const UpdatePLColdStorage= async(req,res,next)=>{
             else{
                 return next(ApiErrors(400,'Your Cold Storage Image section is Empty please Upload some ColdStorage image'));
             }
-        }    
+        }
 
-        // return res.json(PLColdStorage.cold_storage_details);
 
         if(Object.keys(company_details || {} ).length > 0 || Object.keys(cold_storage_details || {}).length > 0){
         
@@ -227,20 +202,10 @@ const UpdatePLColdStorage= async(req,res,next)=>{
                 const errorMessages = Object.values(error.errors).map(error => error.message);
                 return next(ApiErrors(500,errorMessages[0]));            
             }
-            else if(error.code === 11000)
-            {
-                if(error.errorResponse.errmsg.includes('contactNo'))
-                {
-                    return next(ApiErrors(500, `This Contact no is already taken`));
-                }else if(error.errorResponse.errmsg.includes('email'))
-                {
-                    return next(ApiErrors(500, `This Email is already taken`));
-                }
-            }
             else
             {
                 console.error('Error Updating ColdStorage:', error);
-                return next(ApiErrors(500,`Internal Serve Error, Error -: ${error}`));
+                return next(ApiErrors(500,`Internal Serve Error, Error -: ${error.messahe}`));
             }    
     }
 }
@@ -274,7 +239,7 @@ const DeletePLColdStorage=async(req,res,next)=>{
         }        
     } catch (error) {
         console.error('Error While Deleting 3PL Cold Storage:', error);
-        return next(ApiErrors(500,`Internal Serve Error, Error -: ${error} `));  
+        return next(ApiErrors(500,`Internal Serve Error, Error -: ${error.message} `));  
     }   
 }
 
@@ -285,3 +250,31 @@ module.exports={
     UpdatePLColdStorage,
     DeletePLColdStorage
 }
+
+
+
+
+// Error Handling
+
+// else if(error.code === 11000)
+//     {
+//         if(error.errorResponse.errmsg.includes('mobileNo'))
+//         {
+//             console.log(error);
+//             return next(ApiErrors(500, `This Mobile no is already taken -: ${error.errorResponse.errmsg}`));
+//         }else if(error.errorResponse.errmsg.includes('GST_no'))
+//         { 
+//             console.log(error);
+//             return next(ApiErrors(500, `This GST no is already taken -: ${error.errorResponse.errmsg}`));
+//         }
+//         else if(error.errorResponse.errmsg.includes('CIN'))
+//         {
+//             console.log(error);
+//             return next(ApiErrors(500, `This CIN is already taken -: ${error.errorResponse.errmsg}`));
+//         }
+//         else if(error.errorResponse.errmsg.includes('email'))
+//         {
+//             console.log(error);
+//             return next(ApiErrors(500, `This email is already taken -: ${error.errorResponse.errmsg}`));
+//         }
+//     }
