@@ -65,6 +65,28 @@ const Add3PLColdStorage=async(req,res,next)=>{
             console.log(`Internal Serve Error : {error}`);
             return next(ApiErrors(500,errorMessages[0]));            
         }
+        else if(error.code === 11000)
+            {
+                const cinMatch = error.errorResponse.errmsg.match(/"([^"]+)"/);
+                console.log(cinMatch[1]);
+                if(error.errorResponse.errmsg.includes('mobileNo'))
+                {
+                    console.log(error);
+                    return next(ApiErrors(500, `This Mobile no is already taken -: ${cinMatch[1]}`));
+                }else if(error.errorResponse.errmsg.includes('GST_no'))
+                { 
+                    console.log(error);
+                    return next(ApiErrors(500, `This GST no is already taken -: ${cinMatch[1]}`));
+                }
+                else if(error.errorResponse.errmsg.includes('CIN'))
+                {   
+                    return next(ApiErrors(500, `This CIN Number is already taken -: ${cinMatch[1]}`));
+                }
+                else if(error.errorResponse.errmsg.includes('email'))
+                {
+                    return next(ApiErrors(500, `This email is already taken -: ${cinMatch[1]}`));
+                }
+            }
         else
         {
             return next(ApiErrors(500,`Internal Serve Error, ${error}`));
@@ -171,6 +193,8 @@ const UpdatePLColdStorage= async(req,res,next)=>{
             else{
                 return next(ApiErrors(400,'Your Cold Storage Image section is Empty please Upload some ColdStorage image'));
             }
+        } else if(req.body.cold_storage_details && !req.body.cold_storage_details.ColdStorageImage){
+            ColdStorageImage=PLColdStorage.cold_storage_details.ColdStorageImage
         }
 
 
@@ -188,7 +212,19 @@ const UpdatePLColdStorage= async(req,res,next)=>{
 
             await PLColdStorage.validate();
 
-            const UpdatedPLColdStorage=await PLColdStorage.save();
+            const UpdatedPLColdStorage=await ThreePLColdstorage.findByIdAndUpdate
+            (
+                id,
+                {
+                    $set:{
+                        ...(company_details ? {company_details: PLColdStorage.company_details} : {}),
+                        ...(cold_storage_details ? {cold_storage_details: PLColdStorage.cold_storage_details} : {})
+                    },
+                },
+                {
+                    new:true
+                }
+            );
 
             if (!UpdatedPLColdStorage) {
                 return next(ApiErrors(404,'Warehouse not found'))
@@ -202,10 +238,32 @@ const UpdatePLColdStorage= async(req,res,next)=>{
                 const errorMessages = Object.values(error.errors).map(error => error.message);
                 return next(ApiErrors(500,errorMessages[0]));            
             }
+            else if(error.code === 11000)
+            {
+                const cinMatch = error.errorResponse.errmsg.match(/"([^"]+)"/);
+                console.log(cinMatch[1]);
+                if(error.errorResponse.errmsg.includes('mobileNo'))
+                {
+                    console.log(error);
+                    return next(ApiErrors(500, `This Mobile no is already taken -: ${cinMatch[1]}`));
+                }else if(error.errorResponse.errmsg.includes('GST_no'))
+                { 
+                    console.log(error);
+                    return next(ApiErrors(500, `This GST no is already taken -: ${cinMatch[1]}`));
+                }
+                else if(error.errorResponse.errmsg.includes('CIN'))
+                {   
+                    return next(ApiErrors(500, `This CIN Number is already taken -: ${cinMatch[1]}`));
+                }
+                else if(error.errorResponse.errmsg.includes('email'))
+                {
+                    return next(ApiErrors(500, `This email is already taken -: ${cinMatch[1]}`));
+                }
+            }
             else
             {
                 console.error('Error Updating ColdStorage:', error);
-                return next(ApiErrors(500,`Internal Serve Error, Error -: ${error.messahe}`));
+                return next(ApiErrors(500,`Internal Serve Error, Error -: ${error.message}`));
             }    
     }
 }

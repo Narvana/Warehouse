@@ -231,7 +231,7 @@ const ThreePLColdstorageSchema= new mongoose.Schema({
 }
 );
 
-ThreePLColdstorageSchema.plugin(uniqueValidator, { message: 'Error, expected {PATH} to be unique. The value {VALUE} is already taken.'});
+// ThreePLColdstorageSchema.plugin(uniqueValidator, { message: 'Error, expected {PATH} to be unique. The value {VALUE} is already taken.'});
 
 const ThreePLColdstorage= mongoose.model('ThreePLColdstorage',ThreePLColdstorageSchema);
 
