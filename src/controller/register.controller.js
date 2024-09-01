@@ -187,17 +187,6 @@ const update=async(req,res,next)=>{
         {
             return next(ApiErrors(400,`Please Enter Data that you want to update`));
         }
-        if(req.body.password)
-        {
-            const isValidPassword=validatePassword(req.body.password)
-            if(isValidPassword)
-            {  
-               var hashedPassword=bcryptjs.hashSync(req.body.password,10);
-            }
-            else{
-               return next(ApiErrors(400,`Enter a valid password. Atleast Min 8 Character, 1 Uppercase, 1 Lowercase, 1 Special Character, 1 Number`));
-            }
-        }        
 
        const userUpdate = await Register.findByIdAndUpdate
        (
@@ -210,7 +199,6 @@ const update=async(req,res,next)=>{
                     username: username, // || req.user.username,
                     contactNo: contactNo, // || req.user.contactNo,
                     email: email, //|| req.user.email,
-                    password : hashedPassword
                 }
             },
             {
@@ -228,9 +216,57 @@ const update=async(req,res,next)=>{
     }
 }
 
+// Change Password
+const UpdatePassword=async(req,res,next)=>{
+    const checkUser = await Register.findById(req.user.id);
+    if (!checkUser) {
+        return next(ApiErrors(401, "Unauthenticated User. Your data does not exist in the database"));
+    }
+    
+    if (req.user.id !== checkUser._id.toString()) {
+        return next(ApiErrors(401, "Unauthenticated User. You cannot update this profile"));
+    }
+    
+    const { CurrentPassword, NewPassword } = req.body;
+    
+    if (!CurrentPassword || !NewPassword || !CurrentPassword.trim() || !NewPassword.trim()) {
+        return next(ApiErrors(400, "All fields are required"));
+    }
+    
+    try {
+        const isPasswordCorrect = bcryptjs.compareSync(CurrentPassword, checkUser.password);
+        if (!isPasswordCorrect) {
+            return next(ApiErrors(400, "Your current password does not match the one in the database. Enter the correct password"));
+        }
+        const isValidNewPassword = validatePassword(NewPassword);
+        if (!isValidNewPassword) {
+            return next(ApiErrors(400, "Enter a valid new password. At least Min 8 Characters, 1 Uppercase, 1 Lowercase, 1 Special Character, 1 Number"));
+        }
+        const hashedPassword = bcryptjs.hashSync(NewPassword, 10);
+        const update = await Register.findByIdAndUpdate(
+            req.user.id,
+            {
+                $set: { password: hashedPassword },
+            },
+            {
+                new: true,
+            }
+        );
+    
+        if (update) {
+            return next(ApiResponse(200,"", "Password updated successfully"));
+        } else {
+            return next(ApiErrors(400, "No user found with this ID"));
+        }
+    } catch (error) {
+        return next(ApiErrors(500, `Error updating password: ${error.message}`));
+    }    
+}
+
 module.exports={
     SignUp,
     login,
     profile,
-    update
+    update,
+    UpdatePassword
 }

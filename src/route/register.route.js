@@ -17,6 +17,8 @@ router.post('/login/Admin',verifyRole('ADMIN'),registerController.login);
 router.get('/profile',verify.verify,registerController.profile);
 router.put('/update',verify.verify,registerController.update);
 
+router.put('/Update/Password',verify.verify,registerController.UpdatePassword);
+
 // router.post('/register/USER',definerole('USER'),registerController.SignUp);
 // router.post('/login/User',verifyRole('USER'),registerController.login);
 
