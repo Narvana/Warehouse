@@ -35,48 +35,54 @@ const ContactSchema= new mongoose.Schema({
     }
 })
 
-const AddressSchema= new mongoose.Schema({
-    line1:{
-        type: String,
-    },
-    line2:{
-        type: String,
-    },
-    addressType:{
-        type:String,
-        enum: {
-            values: ['BILLING','BUSINESS','SHIPPING','WAREHOUSE'],
-            message: '{VALUE} is not a valid Address Type. It must be BILLING, BUSINESS, SHIPPING Or WAREHOUSE'
-        },
-    },
-    pincode: {
-        type: Number,
-        required: [true,'Pincode is required'],
-        minlenth:[6,'Pincode Number cannot be less than 6 digit'],
-        maxlength:[6,'Pincode number cannot excced 6 digit']
-    },
-    state:{
-        type: String,
-        required: [true, 'State is required for 3PL Warehouse Address'],
-    },
-    city:{
-        type: String,
-        required: [true, 'City is required for 3PL Warehouse Address'],
-    },
-    area:{
-        type: String,
-        required: [true, 'Area is required for 3PL Warehouse Address'],
-    },
-})
+// const AddressSchema= new mongoose.Schema({
+//     line1:{
+//         type: String,
+//     },
+//     line2:{
+//         type: String,
+//     },
+//     addressType:{
+//         type:String,
+//         enum: {
+//             values: ['BILLING','BUSINESS','SHIPPING','WAREHOUSE'],
+//             message: '{VALUE} is not a valid Address Type. It must be BILLING, BUSINESS, SHIPPING Or WAREHOUSE'
+//         },
+//     },
+//     pincode: {
+//         type: Number,
+//         required: [true,'Pincode is required'],
+//         minlenth:[6,'Pincode Number cannot be less than 6 digit'],
+//         maxlength:[6,'Pincode number cannot excced 6 digit']
+//     },
+//     state:{
+//         type: String,
+//         required: [true, 'State is required for 3PL Warehouse Address'],
+//     },
+//     city:{
+//         type: String,
+//         required: [true, 'City is required for 3PL Warehouse Address'],
+//     },
+//     area:{
+//         type: String,
+//         required: [true, 'Area is required for 3PL Warehouse Address'],
+//     },
+// })
 
 const ThreePLWarehouseSchema= new mongoose.Schema({
     wareHouseLister:{
         type:mongoose.Schema.Types.ObjectId,
         ref:'Register'
     },
-
+    isVerified:{
+        type:Boolean,
+        default:false
+    },
+    isFeatured:{
+        type:Boolean,
+        default:false 
+    },
     warehouse_details:{
-
         features: [String],  
         valueAddedServices: [String], 
         otherDetails: {
@@ -85,7 +91,9 @@ const ThreePLWarehouseSchema= new mongoose.Schema({
             MinTimeDuration:{type:Number,min:0},
             DepositExpected:{type:Number,min:0},
             StandardPallet:{type:Number,min:0},
-            DescribeFacility:{type:String,maxLength:300}
+            DescribeFacility:{
+                type:String,
+                required:[true,'Describe Your Facility'],maxlength:300}
         },
         Storage:{
             PalletWeight:{type:Number,min:0},
@@ -114,13 +122,44 @@ const ThreePLWarehouseSchema= new mongoose.Schema({
         },
 
         warehouseAddress: {
-            type: [AddressSchema],
-            validate:{
-                validator: function(v){
-                    return v && v.length>0
+            // type: [AddressSchema],
+            // validate:{
+            //     validator: function(v){
+            //         return v && v.length>0
+            //     },
+            //     message:'At least one Warehouse Address is required for Warehouse Details',
+            // }
+            line1:{
+                type: String,
+            },
+            line2:{
+                type: String,
+            },
+            addressType:{
+                type:String,
+                enum: {
+                    values: ['BILLING','BUSINESS','SHIPPING','WAREHOUSE'],
+                    message: '{VALUE} is not a valid Address Type. It must be BILLING, BUSINESS, SHIPPING Or WAREHOUSE'
                 },
-                message:'At least one Warehouse Address is required for Warehouse Details',
-            }
+            },
+            pincode: {
+                type: Number,
+                required: [true,'Pincode is required'],
+                minlenth:[6,'Pincode Number cannot be less than 6 digit'],
+                maxlength:[6,'Pincode number cannot excced 6 digit']
+            },
+            // state:{
+            //     type: String,
+            //     required: [true, 'State is required for 3PL Warehouse Address'],
+            // },
+            city:{
+                type: String,
+                required: [true, 'City is required for 3PL Warehouse Address'],
+            },
+            area:{
+                type: String,
+                required: [true, 'Area is required for 3PL Warehouse Address'],
+            },
         },
         warehouseContact: {
             type:[ContactSchema],

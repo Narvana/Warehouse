@@ -35,48 +35,54 @@ const ContactSchema= new mongoose.Schema({
     }
 })
 
-const AddressSchema= new mongoose.Schema({
-    line1:{
-        type: String,
-    },
-    line2:{
-        type: String,
-    },
-    pincode: {
-        type: Number,
-        required: [true,'Pincode is required for 3PL ColdStorage Address'],
-        minlength:[6,'Pincode number cannot be less than 6 digit'],
-        maxlength:[6,'Pincode number cannot excced 6 digit']
-    },
-    state:{
-        type: String,
-        required: [true, 'State is required for 3PL ColdStorage Address'],
-    },
-    city:{
-        type: String,
-        required: [true, 'City is required for 3PL ColdStorage Address'],
-    },
-    area:{
-        type: String,
-        required: [true, 'Area is required for 3PL ColdStorage Address'],
-    },
+// const AddressSchema= new mongoose.Schema({
+//     line1:{
+//         type: String,
+//     },
+//     line2:{
+//         type: String,
+//     },
+//     pincode: {
+//         type: Number,
+//         required: [true,'Pincode is required for 3PL ColdStorage Address'],
+//         minlength:[6,'Pincode number cannot be less than 6 digit'],
+//         maxlength:[6,'Pincode number cannot excced 6 digit']
+//     },
+//     state:{
+//         type: String,
+//         required: [true, 'State is required for 3PL ColdStorage Address'],
+//     },
+//     city:{
+//         type: String,
+//         required: [true, 'City is required for 3PL ColdStorage Address'],
+//     },
+//     area:{
+//         type: String,
+//         required: [true, 'Area is required for 3PL ColdStorage Address'],
+//     },
 
-    addressType:{
-        type:String,
-        enum: {
-            values: ['BILLING','BUSINESS','SHIPPING','WAREHOUSE'],
-            message: '{VALUE} is not a valid Address Type. It must be BILLING, BUSINESS, SHIPPING Or WAREHOUSE'
-        },
-    }
-})
+//     addressType:{
+//         type:String,
+//         enum: {
+//             values: ['BILLING','BUSINESS','SHIPPING','WAREHOUSE'],
+//             message: '{VALUE} is not a valid Address Type. It must be BILLING, BUSINESS, SHIPPING Or WAREHOUSE'
+//         },
+//     }
+// })
 
 const ThreePLColdstorageSchema= new mongoose.Schema({
     wareHouseLister:{
         type:mongoose.Schema.Types.ObjectId,
         ref:'Register'
     },
-
-
+    isVerified:{
+        type:Boolean,
+        default:false
+    },
+    isFeatured:{
+        type:Boolean,
+        default:false 
+    },
     cold_storage_details:{
         ColdStorageImage: {
             type:[String],
@@ -87,15 +93,49 @@ const ThreePLColdstorageSchema= new mongoose.Schema({
                 message:'Atleast 1 3PL Cold Storage Image is required'
             }
         },
-        ColdStorageAddress: {
-            type: [AddressSchema],
-            validate:{
-                validator: function(v){
-                    return v && v.length>0
+        // ColdStorageAddress: {
+        //     type: [AddressSchema],
+        //     validate:{
+        //         validator: function(v){
+        //             return v && v.length>0
+        //         },
+        //         message:'At least one ColdStorage Address is required for ColdStorage Details',
+        //     }
+        // },    
+        ColdStorageAddress:{
+            line1:{
+                type: String,
+            },
+            line2:{
+                type: String,
+            },
+            pincode: {
+                type: Number,
+                required: [true,'Pincode is required for 3PL ColdStorage Address'],
+                minlength:[6,'Pincode number cannot be less than 6 digit'],
+                maxlength:[6,'Pincode number cannot excced 6 digit']
+            },
+            // state:{
+            //     type: String,
+            //     required: [true, 'State is required for 3PL ColdStorage Address'],
+            // },
+            city:{
+                type: String,
+                required: [true, 'City is required for 3PL ColdStorage Address'],
+            },
+            area:{
+                type: String,
+                required: [true, 'Area is required for 3PL ColdStorage Address'],
+            },
+        
+            addressType:{
+                type:String,
+                enum: {
+                    values: ['BILLING','BUSINESS','SHIPPING','WAREHOUSE'],
+                    message: '{VALUE} is not a valid Address Type. It must be BILLING, BUSINESS, SHIPPING Or WAREHOUSE'
                 },
-                message:'At least one ColdStorage Address is required for ColdStorage Details',
-            }
-        },    
+            }        
+        },
         ColdStorageContact: {
             type:[ContactSchema],
             validate:{
@@ -115,7 +155,10 @@ const ThreePLColdstorageSchema= new mongoose.Schema({
             MinTimeDuration:{type:Number,min:0},
             DepositExpected:{type:Number,min:0},
             StandardPallet:{type:Number,min:0},
-            DescribeFacility:{type:String,maxLength:300},
+            DescribeFacility:{
+                type:String,
+                required:[true,'Describe Your Facility'],
+                maxlength:300},
             PalletWeight:{type:Number,min:0},
             PalletHeight:{type:Number,min:0},
             MaxVolPerPallet:{type:Number,min:0},

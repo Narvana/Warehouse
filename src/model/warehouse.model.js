@@ -69,6 +69,14 @@ const warehouseSchema = new mongoose.Schema({
         type:mongoose.Schema.Types.ObjectId,
         ref:'Register'
     },
+    isVerified:{
+        type:Boolean,
+        default:false
+    },
+    isFeatured:{
+        type:Boolean,
+        default:false 
+    },
     wareHouseImage: {
         type:[String],
         validate:{
@@ -77,13 +85,15 @@ const warehouseSchema = new mongoose.Schema({
             },
             message:'Atleast 1 Warehouse Image is required'
         }
-     } ,
+     },
+     warehouseDescription: {
+        type: String,
+        required: [true,'Ware House Description is required'],
+        minlength:1,
+        maxlength:300,
+    },
      floorRent: {
         // floors: [floorSchema], // Use correct array notation
-        warehouseDescription: {
-            type: String,
-            required: [true,'Ware House Description is required for Warehouse FloorRent'],
-        },
         expectedDeposit: {
             type: Number,   
             required: [true,'Expected Deposit is required for Warehouse FloorRent'],
@@ -149,6 +159,10 @@ const warehouseSchema = new mongoose.Schema({
             type: Number,
             required: [true,'Total Parking Area is required for Warehouse Layout'],
         },
+        totalPlotArea: {
+            type: Number,
+            required: [true,'Total Plot Area is required for Warehouse Layout'],
+        },
         buildUpArea: {
             type: Number,
             required: [true,'Build Up Area is required for Warehouse Layout'],
@@ -181,14 +195,14 @@ const warehouseSchema = new mongoose.Schema({
             type: String,
             required: [true,'Address is required for Basic Information'],
         },
-        state: {
-            type: String,
-            enum: {
-            values: statesAndUTs,
-            message: '{VALUE} is not a valid state or union territory in India.'
-            },
-            required: [true,'State is required for Basic Information'],
-        },
+        // state: {
+        //     type: String,
+        //     enum: {
+        //     values: statesAndUTs,
+        //     message: '{VALUE} is not a valid state or union territory in India.'
+        //     },
+        //     required: [true,'State is required for Basic Information'],
+        // },
         city: {
             type: String,
             required: [true,'City is required for Basic Information'],
