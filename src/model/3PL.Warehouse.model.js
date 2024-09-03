@@ -80,8 +80,9 @@ const ThreePLWarehouseSchema= new mongoose.Schema({
     },
     isFeatured:{
         type:Boolean,
-        default:false 
+        default:false,
     },
+    type:{type:String,default:"PLWAREHOUSE",immutable: true },
     warehouse_details:{
         features: [String],  
         valueAddedServices: [String], 
@@ -90,6 +91,7 @@ const ThreePLWarehouseSchema= new mongoose.Schema({
             MinSpaceCommitment:{type:Number,min:0},
             MinTimeDuration:{type:Number,min:0},
             DepositExpected:{type:Number,min:0},
+            DepositRent:{type:Number, required:[true,'Deposit Rent is Required'],min:0},
             StandardPallet:{type:Number,min:0},
             DescribeFacility:{
                 type:String,
@@ -120,7 +122,6 @@ const ThreePLWarehouseSchema= new mongoose.Schema({
                 message:'Atleast 1 3PL Warehouse Image is required'
             }
         },
-
         warehouseAddress: {
             // type: [AddressSchema],
             // validate:{

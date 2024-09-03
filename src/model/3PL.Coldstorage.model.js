@@ -83,6 +83,7 @@ const ThreePLColdstorageSchema= new mongoose.Schema({
         type:Boolean,
         default:false 
     },
+    type:{type:String,default:"PLCOLDSTORAGE",immutable: true },
     cold_storage_details:{
         ColdStorageImage: {
             type:[String],
@@ -154,6 +155,7 @@ const ThreePLColdstorageSchema= new mongoose.Schema({
             MinSpaceCommitment:{type:Number,min:0},
             MinTimeDuration:{type:Number,min:0},
             DepositExpected:{type:Number,min:0},
+            DepositRent:{type:Number, required:[true,'Deposit Rent is Required'],min:0},
             StandardPallet:{type:Number,min:0},
             DescribeFacility:{
                 type:String,

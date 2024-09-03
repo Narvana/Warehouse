@@ -77,6 +77,7 @@ const warehouseSchema = new mongoose.Schema({
         type:Boolean,
         default:false 
     },
+    type:{type:String,default:"WAREHOUSE",immutable: true },
     wareHouseImage: {
         type:[String],
         validate:{
@@ -86,11 +87,11 @@ const warehouseSchema = new mongoose.Schema({
             message:'Atleast 1 Warehouse Image is required'
         }
      },
-     warehouseDescription: {
+     wareHouseDescription: {
         type: String,
-        required: [true,'Ware House Description is required'],
-        minlength:1,
-        maxlength:300,
+        required: [true,'WareHouse Description is required'],
+        // minlength:1,
+        // maxlength:300,
     },
      floorRent: {
         // floors: [floorSchema], // Use correct array notation
