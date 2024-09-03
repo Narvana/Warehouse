@@ -59,11 +59,14 @@ const registerRoute=require('./route/register.route');
 const warehouseRoute=require('./route/warehouse.route');
 const PLWarehouseRoute=require('./route/3PLWarehouse.route');
 const PLColdStorageRoute=require('./route/3PLColdstorage.route');
+const AdminRoute=require('./route/Admin.route');
+const FrontRoute=require('./route/Front.route')
 app.use('/api',registerRoute);
 app.use('/api',warehouseRoute);
 app.use('/api',PLWarehouseRoute);
 app.use('/api',PLColdStorageRoute);
-
+app.use('/api/Admin',AdminRoute);
+app.use('/api/Front',FrontRoute)
 
 app.get('/',(req,res)=>{
     res.send('Welcome to Warehousing');
