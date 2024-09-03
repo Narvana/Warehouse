@@ -10,8 +10,6 @@ const upload=require('../middleware/ImageUpload/imageUploadMiddleware')
 
 const warehouseController=require('../controller/warehouse.controller');
 
-// All Warehouse and 3PL
-router.get('/get/WareHouse/all',warehouseController.allWareHouse);
 
 // Warehouse
 router.post('/add/warehouse',verifyToken.verify,verifyRoles(['WAREHOUSE', 'ADMIN']),upload.fields([{name:"wareHouseImage", maxCount:5}]),warehouseController.AddWareHouse);
@@ -25,7 +23,6 @@ router.put('/update/WareHouse',verifyToken.verify,warehouseController.UpdateWare
 router.delete('/delete/WareHouse',verifyToken.verify,warehouseController.DeleteWarehouse);
 
 // Other
-router.get('/get/WareHouse/All/Search',warehouseController.searchWareHouseAll);
 router.post('/add/ThreePL',verifyToken.verify,verifyRoles(['WAREHOUSE', 'ADMIN']),upload.fields([{ name: 'warehouse_details[WarehouseImage]', maxCount: 5 }]),warehouseController.Add3PL);
 
 module.exports=router

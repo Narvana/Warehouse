@@ -24,6 +24,16 @@ const Add3PLWarehouse=async(req,res,next)=>{
     {
         return next(ApiErrors(401,"Unauthenticaed User. You are not allowed to add products"));
     }
+    if(req.user.role === 'ADMIN')
+    {
+        isVerified=true;
+    }
+    else if(req.user.role === 'WAREHOUSE')
+    {
+        isVerified=false;
+    }
+
+
     try 
     {
         let PL;
@@ -45,6 +55,7 @@ const Add3PLWarehouse=async(req,res,next)=>{
 
             PL = new ThreePLWarehouse({
                 wareHouseLister: req.user.id,
+                isVerified,
                 company_details,
                 warehouse_details, 
             });
@@ -95,17 +106,6 @@ const AllPLWarehouse=async(req,res,next)=>{
 
     const id=req.user.id;
 
-    // ThreePLWarehouse.find({ wareHouseLister: new mongoose.Types.ObjectId(id) })
-    // .populate('wareHouseLister') // Optional: populate the referenced Register data
-    // .then((warehouse) => {
-    //     if (warehouse.length === 0) {
-    //         return next(ApiErrors(400,`No 3PL warehouse found with this wareHouseLister ID.`));
-    //     }
-    //     return next(ApiResponses(200,warehouse,' 3PL WareHouse List'));
-    // })
-    // .catch((err) => {
-    //     return next(ApiErrors(500,`Error finding 3PL warehouse: ${err}`));
-    // });
     const warehouse=await ThreePLWarehouse.find({ wareHouseLister: new mongoose.Types.ObjectId(id) }).populate({
         path: 'wareHouseLister',
         select: '-password -refreshToken'

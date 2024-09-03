@@ -25,6 +25,16 @@ const Add3PLColdStorage=async(req,res,next)=>{
     {
         return next(ApiErrors(401,"Unauthenticaed User. Your ID do not match with token"));
     }
+    if(req.user.role === 'ADMIN')
+    {
+        isVerified=true;
+    }
+    else if(req.user.role === 'WAREHOUSE')
+    {
+        isVerified=false;
+    }
+
+
     try 
     {
 
@@ -41,7 +51,6 @@ const Add3PLColdStorage=async(req,res,next)=>{
                     imageURL.push(link);
                 })
             );
-
             cold_storage_details.ColdStorageImage = imageURL;
         } 
 
@@ -49,6 +58,7 @@ const Add3PLColdStorage=async(req,res,next)=>{
 
         PL = new ThreePLColdstorage({
             wareHouseLister: req.user.id,
+            isVerified,
             company_details,
             cold_storage_details
         });

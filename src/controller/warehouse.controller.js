@@ -12,7 +12,8 @@ const {uploadBase64ToFirebase}= require('../middleware/ImageUpload/firebaseConfi
 // WAREHOUSE CRUD
 const AddWareHouse=async(req,res,next)=>{
 
-    const {basicInfo,layout,floorRent}=req.body
+    const {basicInfo,layout,floorRent,wareHouseDescription
+    }=req.body
 
     const checkUser=await Register.findOne({_id:req.user.id});
 
@@ -20,22 +21,24 @@ const AddWareHouse=async(req,res,next)=>{
     {
         return next(ApiErrors(401,"Unauthenticaed User. Your Data do not exist in the database"));   
     }
-    // return res.json(req.user.id);
-
     if(req.user.id != checkUser._id)
     {
         return next(ApiErrors(401,"Unauthenticaed User. You are not allowed to add products"));
     }
-    // if(req.user.role !== req.role)
-    // {
-    //     return next(ApiErrors(403,"Unauthorized User. Only user assign with Warehouse role can access this"));
-    // }
+    if(req.user.role === 'ADMIN')
+    {
+        isVerified=true;
+    }
+    else if(req.user.role === 'WAREHOUSE')
+    {
+        isVerified=false;
+    }
+    
     try {
         let imageURL=[]
         let link;
         let uploadResult;
-
-         
+    
         if(req.files && req.files.wareHouseImage && req.files.wareHouseImage.length > 0){
             await Promise.all(
                 req.files.wareHouseImage.map(async (file)=>{
@@ -51,9 +54,11 @@ const AddWareHouse=async(req,res,next)=>{
         
         const warehouse=new Warehouse({
             wareHouseLister:req.user.id,
+            isVerified,
             basicInfo,
             layout,
             floorRent,
+            wareHouseDescription,
             wareHouseImage: imageURL
         })
     
@@ -283,6 +288,8 @@ const UpdateWarehouse=async(req,res,next)=>{
     }
 }
 
+
+
 const DeleteWarehouse=async(req,res,next)=>{
     const checkUser=await Register.findOne({_id:req.user.id});
 
@@ -312,68 +319,18 @@ const DeleteWarehouse=async(req,res,next)=>{
         }        
     } catch (error) {
         console.error('Error updating warehouse:', error);
-        return next(ApiErrors(500,`Internal Serve Error, Error -: ${error.message} `));  
+        return next(ApiErrors(500,`Internal Serve Error, Error -: ${error.message}`));  
     }   
 }
 
 
-// All Warehouse + 3PL-Warehouser + 3PL-ColdStorage 
-const allWareHouse=async(req,res,next)=>{
-    // const {wareHouseID}=req.params;
-    try {
-        const warehouses=await Warehouse.find();
-        const PLWarehouse= await ThreePLWarehouse.find();
-        const PLColdStorage = await ThreePLColdstorage.find();
-        if(!warehouses && !PLWarehouse && !PLColdStorage)
-        {
-            return next(ApiErrors(400, `No Warehouse found`)); 
-        }
+// const CheckValidation=async(req,res,next)=>{
 
-        return next(ApiResponses(200, { warehouses, PLColdStorage, PLWarehouse },'List of All Warehouse'))
-    } catch (error) {
-        console.error('Internal Server Error:', error);
-        return next(ApiErrors(500,`Internal Serve Error, Error -: ${error.message} `)); 
-    }
-}
+//     const validate=req.query;
 
-// Search API
-const searchWareHouseAll=async(req,res,next)=>{
-        const { id, state, city, price, type } = req.query;
 
-        // Initialize an empty query object
-        let query = {};
-    
-        // Add filters to the query object based on provided query parameters
-        if (id) {
-            query._id = id;
-        }
-        if (state) {
-            query['basicInfo.state'] = state;
-        }
-        if (city) {
-            query['basicInfo.city'] = city;
-        }
-        if (price) {
-            query['floorRent.expectedRent'] = { $lte: price }; // Assuming price is a maximum value
-        }
-        if (type) {
-            query['layout.warehouseType'] = type;
-        }
 
-        try {
-            const SingleWarehouse = await Warehouse.find(query);
-    
-            if (SingleWarehouse.length === 0) {
-                return next(ApiErrors(404, `No warehouse found matching the criteria`));
-            }
-    
-            return next(ApiResponses(200, SingleWarehouse, 'Warehouse Details'));
-        } catch (error) {
-            return next(ApiErrors(500, `Error retrieving warehouse: ${error.message}`));
-        }    
-}
-
-// Recent Warehouse API
+// }
 
 
 // ADD3PL
@@ -537,12 +494,10 @@ const Add3PL=async(req,res,next)=>{
 
 module.exports={
     AddWareHouse,
-    allWareHouse,
     getListerWarehouse,
     singleWareHouse,
     UpdateWarehouse,
     DeleteWarehouse,
-    searchWareHouseAll,
     Add3PL,
 }
 
