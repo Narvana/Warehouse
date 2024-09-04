@@ -96,7 +96,7 @@ const warehouseSchema = new mongoose.Schema({
      floorRent: {
         // floors: [floorSchema], // Use correct array notation
         expectedDeposit: {
-            type: Number,   
+            type: Number,
             required: [true,'Expected Deposit is required for Warehouse FloorRent'],
         },        
         expectedRent: {
@@ -149,7 +149,7 @@ const warehouseSchema = new mongoose.Schema({
         },
         plotStatus: {
             type: String,
-            enum: 
+            enum:
             {
                 values: ['Agriculture', 'Commercial', 'Industrial', 'Residential'],
                 message: '{VALUE} is not a valid Plot Status. It must be either Agriculture, Commercial, Industrial or Residential.'

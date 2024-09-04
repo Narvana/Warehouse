@@ -104,7 +104,15 @@ const ThreePLWarehouseSchema= new mongoose.Schema({
             BusinessHour:{type:String},
             StorageMethod:[String],
             ProductNotAllowed:[String],
-            PropertyType:{type:String,enum:['RCC','Industrial Shed']},
+            PropertyType :{
+                type:String,
+                enum:{
+                    values: ['RCC','Industrial Shed'],
+                    message: '{VALUE} is not a valid Property Type. It must be RCC Or Industrial Shed'
+                },
+                required:[true,'Property Type of the Warehouse is required']
+            },
+            TotalArea:{type:Number,min:0,required:[true,'Total Area of the Warehouse is required']},
             AvaliableArea:{type:Number,min:0}
         },
         Financials:{

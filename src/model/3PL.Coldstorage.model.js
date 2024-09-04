@@ -183,13 +183,15 @@ const ThreePLColdstorageSchema= new mongoose.Schema({
                 },
             },
             DryArea:{type:Number,min:0},
-            TotalArea:{type:Number,min:0},
-            PropertyType:{
+            TotalArea:{type:Number,min:0,required:[true,'Total Area of the Cold Storage is required']},
+            PropertyType :{
+
                 type:String,
                 enum:{
                     values: ['RCC','Industrial Shed'],
                     message: '{VALUE} is not a valid Property Type. It must be RCC Or Industrial Shed'
-                }
+                },
+                required:[true,'Property Type of the Cold Storage is required']
             },
             ChamberNo:{type:Number,min:0},
             ChamberHeight:{type:Number,min:0},
