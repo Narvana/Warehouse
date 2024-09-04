@@ -45,7 +45,6 @@ const AllVerified=async(req,res,next)=>{
                         },
                         {
                             $project: {
-                                id: '$_id',
                                 name: '$company_details.company_name',
                                 city: '$warehouse_details.warehouseAddress.city',
                                 price: '$warehouse_details.otherDetails.DepositeRent',
@@ -68,12 +67,11 @@ const AllVerified=async(req,res,next)=>{
                         },
                         {
                             $project: {
-                                id: '$_id',
                                 name: '$company_details.company_name',
                                 city: '$cold_storage_details.ColdStorageAddress.city',
                                 price: '$cold_storage_details.AdditionDetails.DepositeRent',
                                 description: '$cold_storage_details.AdditionDetails.DescribeFacility',
-                                image: { $arrayElemAt: ['$cold_storage_details. ColdStorageImage', 0] }, 
+                                image: { $arrayElemAt: ['$cold_storage_details.ColdStorageImage', 0] },
                                 type: '$type',
                               }, 
                         }
@@ -149,7 +147,7 @@ const AllFeatured=async(req,res,next)=>{
                                 city: '$cold_storage_details.ColdStorageAddress.city',
                                 price: '$cold_storage_details.AdditionDetails.DepositeRent',
                                 description: '$cold_storage_details.AdditionDetails.DescribeFacility',
-                                image: { $arrayElemAt: ['$cold_storage_details.ColdStorageImage', 0] }, 
+                                image: { $arrayElemAt: ['$cold_storage_details.ColdStorageImage',0] }, 
                                 type: '$type',
                               }, 
                         }
@@ -195,7 +193,6 @@ const recentWarehouse=async(req,res,next)=>{
             },
             {
                 $project: {
-                    // id: '$_id',
                     name: '$basicInfo.name',
                     city: '$basicInfo.city',
                     price: '$floorRent.expectedRent',
@@ -224,7 +221,6 @@ const recentWarehouse=async(req,res,next)=>{
                         {
                             $project: 
                             {
-                                // id: '$_id',
                                 name: '$company_details.company_name',
                                 city: '$warehouse_details.warehouseAddress.city',
                                 price: '$warehouse_details.otherDetails.DepositeRent',
@@ -255,7 +251,6 @@ const recentWarehouse=async(req,res,next)=>{
                         },
                         {
                             $project: {
-                                // id: '$_id',
                                 name: '$company_details.company_name',
                                 city: '$cold_storage_details.ColdStorageAddress.city',
                                 price: '$cold_storage_details.AdditionDetails.DepositeRent',
@@ -291,17 +286,17 @@ const searchWareHouseAll=async(req,res,next)=>{
         const threePLWarehouseMatchConditions = {};
         const threePLColdstorageMatchConditions = {};      
     
-        if (state) {
-            warehouseMatchConditions['basicInfo.state'] = state;
-            threePLWarehouseMatchConditions['warehouse_details.warehouseAddress'] =
-            {
-                $elemMatch: { state }
-            };
-            threePLColdstorageMatchConditions['cold_storage_details.warehouseAddress'] =
-            {
-                $elemMatch: { state }
-            };
-        }
+        // if (state) {
+        //     warehouseMatchConditions['basicInfo.state'] = state;
+        //     threePLWarehouseMatchConditions['warehouse_details.warehouseAddress'] =
+        //     {
+        //         $elemMatch: { state }
+        //     };
+        //     threePLColdstorageMatchConditions['cold_storage_details.warehouseAddress'] =
+        //     {
+        //         $elemMatch: { state }
+        //     };
+        // }
         if (city) {
             warehouseMatchConditions['basicInfo.city'] = city;
             // if (state) {
@@ -321,8 +316,8 @@ const searchWareHouseAll=async(req,res,next)=>{
             // }
         };
         
-        console.log(warehouseMatchConditions);
-        console.log( threePLWarehouseMatchConditions);
+        // console.log(warehouseMatchConditions);
+        // console.log( threePLWarehouseMatchConditions);
         
         //if (price) {
         //     query['floorRent.expectedRent'] = { $lte: price }; // Assuming price is a maximum value
