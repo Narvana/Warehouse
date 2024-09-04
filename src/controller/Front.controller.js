@@ -29,7 +29,7 @@ const AllVerified=async(req,res,next)=>{
                       name: '$basicInfo.name',
                       city: '$basicInfo.city',
                       price: '$floorRent.expectedRent',
-                      description: '$warehouseDescription',
+                      description: '$wareHouseDescription',
                       image: { $arrayElemAt: ['$wareHouseImage', 0] }, 
                       type: '$type',
                     },
@@ -101,14 +101,14 @@ const AllFeatured=async(req,res,next)=>{
             },
             {
                 $project: 
-                    {
-                      name: '$basicInfo.name',
-                      city: '$basicInfo.city',
-                      price: '$floorRent.expectedRent',
-                      description: '$warehouseDescription',
-                      image: { $arrayElemAt: ['$wareHouseImage', 0] }, 
-                      type: '$type',
-                    },
+                {
+                  name: '$basicInfo.name',
+                  city: '$basicInfo.city',
+                  price: '$floorRent.expectedRent',
+                  description: '$wareHouseDescription',
+                  image: { $arrayElemAt: ['$wareHouseImage', 0] }, 
+                  type: '$type',
+                },
             },
             {
                 $unionWith:{
@@ -125,7 +125,7 @@ const AllFeatured=async(req,res,next)=>{
                                 city: '$warehouse_details.warehouseAddress.city',
                                 price: '$warehouse_details.otherDetails.DepositRent',
                                 description: '$warehouse_details.otherDetails.DescribeFacility',
-                                image: { $arrayElemAt: ['$warehouse_details.WarehouseImage', 0] },
+                                image: { $arrayElemAt: ['$warehouse_details.WarehouseImage', 0] }, 
                                 type: '$type',
                               }, 
                         }
@@ -147,7 +147,7 @@ const AllFeatured=async(req,res,next)=>{
                                 city: '$cold_storage_details.ColdStorageAddress.city',
                                 price: '$cold_storage_details.AdditionDetails.DepositRent',
                                 description: '$cold_storage_details.AdditionDetails.DescribeFacility',
-                                image: { $arrayElemAt: ['$cold_storage_details.ColdStorageImage',0] }, 
+                                image: { $arrayElemAt: ['$cold_storage_details.ColdStorageImage', 0] },
                                 type: '$type',
                               }, 
                         }
