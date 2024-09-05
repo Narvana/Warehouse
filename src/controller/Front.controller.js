@@ -311,9 +311,10 @@ const searchWareHouseAll=async(req,res,next)=>{
     }
 
     if (area) {
-        warehouseMatchConditions['layout.totalPlotArea'] = propertytype;
-        threePLWarehouseMatchConditions['warehouse_details.Storage.TotalArea'] = propertytype;
-        threePLColdstorageMatchConditions['cold_storage_details.ColdStorageFacility.TotalArea'] =propertytype;
+        const selectArea = {$lte:area}; 
+        warehouseMatchConditions['layout.totalPlotArea'] = selectArea;
+        threePLWarehouseMatchConditions['warehouse_details.Storage.TotalArea'] = selectArea;
+        threePLColdstorageMatchConditions['cold_storage_details.ColdStorageFacility.TotalArea'] = selectArea;
     }
 
     if (type) {
@@ -321,10 +322,6 @@ const searchWareHouseAll=async(req,res,next)=>{
         threePLWarehouseMatchConditions['type'] = type;
         threePLColdstorageMatchConditions['type'] =type;
     }
-
-
-
-
     
     try {
         const Result = await Warehouse.aggregate([
