@@ -147,6 +147,14 @@ const login=async(req,res,next)=>{
 
 }
 
+// const numberLogin=async(req,res,next)=>{
+//     if(!req.body.contactNo || req.body.contactNo.trim().length > 0)
+//     {
+//         return next(ApiErrors(400,'Please Enter Your Registered Number'))
+//     }
+//     const data=await Register.findOne({contactNo});
+// }
+
 const profile=async(req,res,next)=>{
     try {
         const checkUser=await Register.findOne({_id:req.user.id}).select("-password -refreshToken");
@@ -263,10 +271,39 @@ const UpdatePassword=async(req,res,next)=>{
     }    
 }
 
+const EmailCheck=async(req,res,next)=>{
+
+    const {email}= req.body;
+
+    const existense= await Register.findOne({email});
+
+    if(existense)
+    {
+        return next(ApiErrors(400,`${email} email already exists. Please entry a different one`))
+    }
+    return next(ApiResponse(200,`${email} email is good to go`));
+}
+
+const ContactCheck=async(req,res,next)=>{
+
+    const {contactNo}= req.body;
+
+    const existense= await Register.findOne({contactNo});
+
+    if(existense)
+    {
+        return next(ApiErrors(400,`${contactNo} Contact Number already exists. Please entry a different one`))
+    }
+    return next(ApiResponse(200,`${contactNo} Contact Number is good to go`));
+}
+
+
 module.exports={
     SignUp,
     login,
     profile,
     update,
-    UpdatePassword
+    UpdatePassword,
+    EmailCheck,
+    ContactCheck
 }
