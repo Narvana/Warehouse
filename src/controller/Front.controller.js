@@ -289,12 +289,8 @@ const searchWareHouseAll=async(req,res,next)=>{
     // Adding conditions dynamically based on provided parameters
     if (city) {
         warehouseMatchConditions['basicInfo.city'] = city;
-        threePLWarehouseMatchConditions['warehouse_details.warehouseAddress'] = {
-            $elemMatch: { city }
-        };
-        threePLColdstorageMatchConditions['cold_storage_details.warehouseAddress'] = {
-            $elemMatch: { city }
-        };
+        threePLWarehouseMatchConditions['warehouse_details.warehouseAddress.city'] = city;
+        threePLColdstorageMatchConditions['cold_storage_details.ColdStorageAddress.city'] = city;
     }
     
     if (price) {
