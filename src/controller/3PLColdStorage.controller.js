@@ -31,7 +31,7 @@ const Add3PLColdStorage=async(req,res,next)=>{
     }
     else if(req.user.role === 'WAREHOUSE')
     {
-        isVerified=false;
+        isVerified=true;
     }
 
 
@@ -60,7 +60,8 @@ const Add3PLColdStorage=async(req,res,next)=>{
             wareHouseLister: req.user.id,
             isVerified,
             company_details,
-            cold_storage_details
+            cold_storage_details,
+            isFeatured:true,
         });
         
         // Save the PL object

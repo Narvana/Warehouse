@@ -30,7 +30,7 @@ const Add3PLWarehouse=async(req,res,next)=>{
     }
     else if(req.user.role === 'WAREHOUSE')
     {
-        isVerified=false;
+        isVerified=true;
     }
 
 
@@ -58,6 +58,7 @@ const Add3PLWarehouse=async(req,res,next)=>{
                 isVerified,
                 company_details,
                 warehouse_details, 
+                isFeatured:true,
             });
 
         

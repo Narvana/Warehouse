@@ -31,7 +31,7 @@ const AddWareHouse=async(req,res,next)=>{
     }
     else if(req.user.role === 'WAREHOUSE')
     {
-        isVerified=false;
+        isVerified=true;
     }
     
     try {
@@ -55,6 +55,7 @@ const AddWareHouse=async(req,res,next)=>{
         const warehouse=new Warehouse({
             wareHouseLister:req.user.id,
             isVerified,
+            isFeatured:true,
             basicInfo,
             layout,
             floorRent,
