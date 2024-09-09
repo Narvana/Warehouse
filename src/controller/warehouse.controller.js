@@ -1,8 +1,6 @@
 const Warehouse = require('../model/warehouse.model');
 const Register=require('../model/register.model');
 const ThreePL=require('../model/3PL.model');
-const ThreePLColdstorage=require('../model/3PL.Coldstorage.model');
-const ThreePLWarehouse=require('../model/3PL.Warehouse.model');
 const mongoose = require('mongoose');
 const ApiErrors=require('../utils/ApiResponse/ApiErrors');
 const ApiResponses=require('../utils/ApiResponse/ApiResponse');
@@ -12,7 +10,7 @@ const {uploadBase64ToFirebase}= require('../middleware/ImageUpload/firebaseConfi
 // WAREHOUSE CRUD
 const AddWareHouse=async(req,res,next)=>{
 
-    const {basicInfo,layout,floorRent,wareHouseDescription
+    const {basicInfo,layout,floorRent,wareHouseDescription,WTRA
     }=req.body
 
     const checkUser=await Register.findOne({_id:req.user.id});
@@ -29,9 +27,9 @@ const AddWareHouse=async(req,res,next)=>{
     {
         isVerified=true;
     }
-    else if(req.user.role === 'WAREHOUSE')
+    else if(req.user.role === 'LISTER')
     {
-        isVerified=true;
+        isVerified=false;
     }
     
     try {
@@ -53,14 +51,15 @@ const AddWareHouse=async(req,res,next)=>{
 
         
         const warehouse=new Warehouse({
-            wareHouseLister:req.user.id,
+            Lister:req.user.id,
             isVerified,
-            isFeatured:true,
+            isFeatured:false,
             basicInfo,
             layout,
             floorRent,
             wareHouseDescription,
-            wareHouseImage: imageURL
+            wareHouseImage: imageURL,
+            WTRA
         })
     
         const data=await warehouse.save();
@@ -96,24 +95,43 @@ const AddWareHouse=async(req,res,next)=>{
     }
 }
 
-const getListerWarehouse=async(req,res,next)=>{
+const getListerAllWarehouse=async(req,res,next)=>{
     
     const id=req.user.id;
     
     try {
-        const warehouse=await Warehouse.find({ wareHouseLister: new mongoose.Types.ObjectId(id) }).populate({
-            path:"wareHouseLister",
-            select:("-password -refreshToken")
-        });
+        // const warehouse=await Warehouse.find({ Lister: new mongoose.Types.ObjectId(id) }).populate({
+        //     path:"Lister",
+        //     select:("-password -refreshToken")
+        // });
+
+        const warehouse = await Warehouse.aggregate([
+            {
+                $match:{
+                    'Lister' :  new mongoose.Types.ObjectId(id) 
+                }
+            },
+            {
+                $project : {
+                    name: '$basicInfo.name',
+                    city: '$basicInfo.city',
+                    price: '$floorRent.expectedRent',
+                    description: '$wareHouseDescription',
+                    image: { $arrayElemAt: ['$wareHouseImage', 0] },
+                    type: '$type',
+                    isVerified : '$isVerified',
+                    isFeatured : '$isFeatured'
+                }
+            }
+        ]);
     
         if (warehouse.length === 0) {
-            return next(ApiErrors(400,`No warehouse found with this wareHouseLister ID.`));
+            return next(ApiErrors(400,`No warehouse found with this Lister ID.`));
         }
         return next(ApiResponses(200,warehouse,'WareHouse List'));
             
     } catch (error) {
         console.log(error);
-        
         return next(ApiErrors(500, `Error retrieving warehouse: ${error.message}`));   
     }
 
@@ -213,10 +231,11 @@ const UpdateWarehouse=async(req,res,next)=>{
             || 
             Object.keys(floorRent || {}).length > 0 
             || 
-            wareHouseImage.length > 0 
+            req.body.wareHouseImage 
         )
         {   
             if (basicInfo) {
+
                 warehouse.basicInfo = { ...warehouse.basicInfo.toObject(), ...basicInfo };
             }
 
@@ -314,7 +333,7 @@ const DeleteWarehouse=async(req,res,next)=>{
         const removeWarehouse=await Warehouse.findByIdAndDelete(id);
 
         if (removeWarehouse){
-            return next(ApiResponses(200,"Warehouse deleted successfully"));
+            return next(ApiResponses(200,[],"Warehouse deleted successfully"));
         } else {
             return next(ApiErrors(404,"No warehouse found with the provided ID"));
         }        
@@ -384,7 +403,7 @@ const Add3PL=async(req,res,next)=>{
         // if (warehouse_details && cold_storage_details) {
         //     // Both warehouse and cold storage details exist
         //     PL = new ThreePL({
-        //         wareHouseLister: req.user.id,
+        //         Lister: req.user.id,
         //         company_details,
         //         warehouse_details,
         //         cold_storage_details,
@@ -392,14 +411,14 @@ const Add3PL=async(req,res,next)=>{
         // } else if (warehouse_details) {
         //     // Only warehouse details exist
         //     PL = new ThreePL({
-        //         wareHouseLister: req.user.id,
+        //         Lister: req.user.id,
         //         company_details,
         //         warehouse_details,
         //     });
         // } else if (cold_storage_details) {
         //     // Only cold storage details exist
         //     PL = new ThreePL({
-        //         wareHouseLister: req.user.id,
+        //         Lister: req.user.id,
         //         company_details,
         //         cold_storage_details,
         //     });
@@ -427,7 +446,7 @@ const Add3PL=async(req,res,next)=>{
         if (warehouse_details && cold_storage_details) {
             // Both warehouse and cold storage details exist
             PL = new ThreePL({
-                wareHouseLister: req.user.id,
+                Lister: req.user.id,
                 company_details,
                 warehouse_details,
                 cold_storage_details,
@@ -435,14 +454,14 @@ const Add3PL=async(req,res,next)=>{
         } else if (warehouse_details) {
             // Only warehouse details exist
             PL = new ThreePL({
-                wareHouseLister: req.user.id,
+                Lister: req.user.id,
                 company_details,
                 warehouse_details,
             });
         } else if (cold_storage_details) {
             // Only cold storage details exist
             PL = new ThreePL({
-                wareHouseLister: req.user.id,
+                Lister: req.user.id,
                 company_details,
                 cold_storage_details,
             });
@@ -495,7 +514,7 @@ const Add3PL=async(req,res,next)=>{
 
 module.exports={
     AddWareHouse,
-    getListerWarehouse,
+    getListerAllWarehouse,
     singleWareHouse,
     UpdateWarehouse,
     DeleteWarehouse,

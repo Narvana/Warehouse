@@ -12,9 +12,9 @@ const warehouseController=require('../controller/warehouse.controller');
 
 
 // Warehouse
-router.post('/add/warehouse',verifyToken.verify,verifyRoles(['WAREHOUSE', 'ADMIN']),upload.fields([{name:"wareHouseImage", maxCount:5}]),warehouseController.AddWareHouse);
+router.post('/add/warehouse',verifyToken.verify,verifyRoles(['LISTER', 'ADMIN']),upload.fields([{name:"wareHouseImage", maxCount:5}]),warehouseController.AddWareHouse);
 
-router.get('/get/WareHouse/Lister',verifyToken.verify,warehouseController.getListerWarehouse);
+router.get('/get/WareHouse/Lister',verifyToken.verify,warehouseController.getListerAllWarehouse);
 
 router.get('/get/WareHouse/Detail',warehouseController.singleWareHouse);
 

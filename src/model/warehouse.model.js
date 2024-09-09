@@ -57,15 +57,15 @@ const floorSchema = new mongoose.Schema({
     floor: {
         type: String,
         required: [true, 'Specifing Floor type is required for Warehouse FloorRent'],
-        enum: {
-            values: ['Basement', 'Ground', 'First', 'Second'],
-            message: '{VALUE} is not a valid Floor Type. It must be Basement, Ground, First Or Second'
-        },
+        // enum: {
+        //     values: ['Basement', 'Ground', 'First', 'Second'],
+        //     message: '{VALUE} is not a valid Floor Type. It must be Basement, Ground, First Or Second'
+        // },
     },
 });
 
 const warehouseSchema = new mongoose.Schema({
-    wareHouseLister:{
+    Lister:{
         type:mongoose.Schema.Types.ObjectId,
         ref:'Register'
     },
@@ -93,7 +93,11 @@ const warehouseSchema = new mongoose.Schema({
         // minlength:1,
         // maxlength:300,
     },
-     floorRent: {
+    WTRA:{
+        type:Boolean,
+        required:[true, 'WTRA Norms Feild is Required'],
+    },
+    floorRent: {
         // floors: [floorSchema], // Use correct array notation
         expectedDeposit: {
             type: Number,
@@ -196,14 +200,14 @@ const warehouseSchema = new mongoose.Schema({
             type: String,
             required: [true,'Address is required for Basic Information'],
         },
-        // state: {
-        //     type: String,
-        //     enum: {
-        //     values: statesAndUTs,
-        //     message: '{VALUE} is not a valid state or union territory in India.'
-        //     },
-        //     required: [true,'State is required for Basic Information'],
-        // },
+        state: {
+            type: String,
+            // enum: {
+            // values: statesAndUTs,
+            // message: '{VALUE} is not a valid state or union territory in India.'
+            // },
+            required: [true,'State is required for Basic Information'],
+        },
         city: {
             type: String,
             required: [true,'City is required for Basic Information'],
@@ -212,7 +216,6 @@ const warehouseSchema = new mongoose.Schema({
             type: String,
             required: [true,'Locality is required for Basic Information'],
         },
-
         ownerShipType: {
             type: String,
             enum: {
