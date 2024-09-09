@@ -11,7 +11,7 @@ const upload=require('../middleware/ImageUpload/imageUploadMiddleware')
 const PLWarehouseController=require('../controller/3PLWarehouse.controller');
 
 // 3PL Warehouse
-router.post('/add/ThreePL/Warehouse',verifyToken.verify,verifyRoles(['WAREHOUSE', 'ADMIN']),upload.fields([{ name: 'warehouse_details[WarehouseImage]', maxCount: 5 }]),PLWarehouseController.Add3PLWarehouse);
+router.post('/add/ThreePL/Warehouse',verifyToken.verify,verifyRoles(['LISTER', 'ADMIN']),upload.fields([{ name: 'warehouse_details[WarehouseImage]', maxCount: 5 }]),PLWarehouseController.Add3PLWarehouse);
 router.get('/get/3PL/WareHouse/Lister/All',verifyToken.verify,PLWarehouseController.AllPLWarehouse);
 router.get('/get/3PL/WareHouse/Lister/Single',verifyToken.verify,PLWarehouseController.singlePLWarehouse);
 router.put('/update/3PL/Warehouse',verifyToken.verify,PLWarehouseController.UpdatePLWarehouse);

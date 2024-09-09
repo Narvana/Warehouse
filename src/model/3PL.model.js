@@ -191,7 +191,7 @@ const ThreePLSchema= new mongoose.Schema({
             ChamberNo:{type:Number,minLength:0},
             ChamberHeight:{type:Number,minLength:0},
             TotalPalletPosition:{type:Number,minLength:0}, 
-            TempRangeMin:{type:Number,minLength:0},
+            TempRangeMin:{type:Number},
             TempRangeMax:{type:Number,minLength:0},
         },
         BelowZero:{
@@ -215,7 +215,8 @@ function isDeepEmpty(obj) {
         } else if (typeof value === 'object' && value !== null) {
             return isDeepEmpty(value);
         }
-        return !value; // Check for empty string, null, undefined, or false
+        // console.log('Value', !value);        
+        return value; // Check for empty string, null, undefined, or false
     });
 }
 
@@ -224,23 +225,27 @@ ThreePLSchema.pre('validate', function (next) {
     const serviceType = this.company_details.service_type;
 
     if (serviceType === 'COLDSTORAGE') {
-        if (this.warehouse_details && !isDeepEmpty(this.warehouse_details)) {
+        if (this.warehouse_details && isDeepEmpty(this.warehouse_details)) {
+            console.log('Ware',isDeepEmpty(this.warehouse_details));
             return next(new Error('Warehouse details should not be filled when service_type is COLDSTORAGE'));
         } else {
             this.warehouse_details = undefined;  // Remove the field to prevent it from being saved
         }
     } else if (serviceType === 'WAREHOUSE') {
-        if (this.cold_storage_details && !isDeepEmpty(this.cold_storage_details)) {
+        if (this.cold_storage_details && isDeepEmpty(this.cold_storage_details)) {
+            console.log('Cold',isDeepEmpty(this.cold_storage_details));
             return next(new Error('Cold storage details should not be filled when service_type is WAREHOUSE'));
         } 
         else {
             this.cold_storage_details = undefined;  // Remove the field to prevent it from being saved
         }
     } else if (serviceType === 'BOTH') {
-        if (!this.warehouse_details ||!isDeepEmpty(this.warehouse_details)) {
+        if (!this.warehouse_details || !isDeepEmpty(this.warehouse_details)) {
+            console.log('Ware',isDeepEmpty(this.warehouse_details));
             return next(new Error('Warehouse details must be provided when BOTH service type is selected.'));
         }
-        if (!this.cold_storage_details ||!isDeepEmpty(this.cold_storage_details)) {
+        if (!this.cold_storage_details || !isDeepEmpty(this.cold_storage_details)) {
+            console.log('Cold',isDeepEmpty(this.cold_storage_details));
             return next(new Error('Cold storage details must be provided when BOTH service type is selected.'));
         }
     }
