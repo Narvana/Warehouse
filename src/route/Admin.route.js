@@ -11,11 +11,13 @@ const {verifyRole,verifyRoles}=require('../middleware/role/verifyRole');
 const AdminController=require('../controller/Admin.controller');
 
 // All Warehouse and 3PL
-router.get('/get/WareHouse/all',AdminController.allWareHouse);
+router.get('/get/All/Listing',AdminController.allListing);
 
 router.put('/Verified/Status',verifyToken.verify,verifyRole('ADMIN'),AdminController.UpdateVerifiedStatus);
 
 router.put('/Featured/Status',verifyToken.verify,verifyRole('ADMIN'),AdminController
 .UpdateFeatureStatus);
+
+router.get('/Enquiry/List',AdminController.EnquiryList);
 
 module.exports=router
