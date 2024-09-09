@@ -6,10 +6,10 @@ const ContactSchema= new mongoose.Schema({
     mobileNo:{
         type: String,
         required: [true, 'Mobile No is required for 3PL Warehouse Contact'],
-        unique: true,
-        trim:true,
-        validate: {
-            validator: function(value) {
+        unique : true,
+        trim : true,
+        validate : {
+            validator : function(value) {
                 // Ensure the phone number is 10 digits long
                 return /^[0-9]{10}$/.test(value);
             },
@@ -35,42 +35,8 @@ const ContactSchema= new mongoose.Schema({
     }
 })
 
-// const AddressSchema= new mongoose.Schema({
-//     line1:{
-//         type: String,
-//     },
-//     line2:{
-//         type: String,
-//     },
-//     addressType:{
-//         type:String,
-//         enum: {
-//             values: ['BILLING','BUSINESS','SHIPPING','WAREHOUSE'],
-//             message: '{VALUE} is not a valid Address Type. It must be BILLING, BUSINESS, SHIPPING Or WAREHOUSE'
-//         },
-//     },
-//     pincode: {
-//         type: Number,
-//         required: [true,'Pincode is required'],
-//         minlenth:[6,'Pincode Number cannot be less than 6 digit'],
-//         maxlength:[6,'Pincode number cannot excced 6 digit']
-//     },
-//     state:{
-//         type: String,
-//         required: [true, 'State is required for 3PL Warehouse Address'],
-//     },
-//     city:{
-//         type: String,
-//         required: [true, 'City is required for 3PL Warehouse Address'],
-//     },
-//     area:{
-//         type: String,
-//         required: [true, 'Area is required for 3PL Warehouse Address'],
-//     },
-// })
-
 const ThreePLWarehouseSchema= new mongoose.Schema({
-    wareHouseLister:{
+    Lister:{
         type:mongoose.Schema.Types.ObjectId,
         ref:'Register'
     },
@@ -83,6 +49,10 @@ const ThreePLWarehouseSchema= new mongoose.Schema({
         default:false,
     },
     type:{type:String,default:"PLWAREHOUSE",immutable: true },
+    WTRA:{
+        type:Boolean,
+        required:[true, 'WTRA Norms Feild is Required'],
+    },
     warehouse_details:{
         features: [String],  
         valueAddedServices: [String], 
@@ -138,11 +108,15 @@ const ThreePLWarehouseSchema= new mongoose.Schema({
             //     },
             //     message:'At least one Warehouse Address is required for Warehouse Details',
             // }
-            line1:{
-                type: String,
-            },
-            line2:{
-                type: String,
+            // line1:{
+            //     type: String,
+            // },
+            // line2:{
+            //     type: String,
+            // },
+            address:{
+                type:String,
+                required:[true,'Address is required for 3PL Warehouse Address'],
             },
             addressType:{
                 type:String,
@@ -157,10 +131,10 @@ const ThreePLWarehouseSchema= new mongoose.Schema({
                 minlenth:[6,'Pincode Number cannot be less than 6 digit'],
                 maxlength:[6,'Pincode number cannot excced 6 digit']
             },
-            // state:{
-            //     type: String,
-            //     required: [true, 'State is required for 3PL Warehouse Address'],
-            // },
+            state:{
+                type: String,
+                required: [true, 'State is required for 3PL Warehouse Address'],
+            },
             city:{
                 type: String,
                 required: [true, 'City is required for 3PL Warehouse Address'],
@@ -212,7 +186,7 @@ const ThreePLWarehouseSchema= new mongoose.Schema({
         },
         CIN: {
             type: String,
-            required: [true, 'CIN is required for Company Details'],
+            // required: [true, 'CIN is required for Company Details'],
             trim: true,
             unique: true,
             validate: {
@@ -225,7 +199,7 @@ const ThreePLWarehouseSchema= new mongoose.Schema({
         },
         GST_no:{
             type: String,
-                required: [true, 'GST number is required for Company Details'],
+                // required: [true, 'GST number is required for Company Details'],
                 trim: true,
                 unique: true,
                 validate: {
