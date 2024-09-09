@@ -273,7 +273,13 @@ const UpdatePassword=async(req,res,next)=>{
 
 const EmailCheck=async(req,res,next)=>{
 
-    const {email}= req.body;
+    // const {email}= req.body;
+    const email=req.query.email;
+
+    if(!email)
+    {
+        return next(ApiErrors(400,`Please provide the email`));
+    }
 
     const existense= await Register.findOne({email});
 
@@ -281,12 +287,17 @@ const EmailCheck=async(req,res,next)=>{
     {
         return next(ApiErrors(400,`${email} email already exists. Please entry a different one`))
     }
-    return next(ApiResponse(200,`${email} email is good to go`));
+    return next(ApiResponse(200,email,`${email} email is good to go`));
 }
 
 const ContactCheck=async(req,res,next)=>{
 
-    const {contactNo}= req.body;
+    const contactNo=req.query.contactNo;
+
+    if(!contactNo)
+    {
+        return next(ApiErrors(400,`Please provide the Contact No`));
+    }
 
     const existense= await Register.findOne({contactNo});
 
@@ -294,7 +305,7 @@ const ContactCheck=async(req,res,next)=>{
     {
         return next(ApiErrors(400,`${contactNo} Contact Number already exists. Please entry a different one`))
     }
-    return next(ApiResponse(200,`${contactNo} Contact Number is good to go`));
+    return next(ApiResponse(200,contactNo,`${contactNo} Contact Number is good to go`));
 }
 
 

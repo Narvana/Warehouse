@@ -53,7 +53,7 @@ const registerSchema=new mongoose.Schema(
         role:{
             type:String,
             required: true,
-            enum:['ADMIN','USER','WAREHOUSE']
+            enum:['ADMIN','USER','LISTER']
         },
         refreshToken:
         {
