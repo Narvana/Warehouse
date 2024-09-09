@@ -29,9 +29,9 @@ const Add3PLColdStorage=async(req,res,next)=>{
     {
         isVerified=true;
     }
-    else if(req.user.role === 'WAREHOUSE')
+    else if(req.user.role === 'LISTER')
     {
-        isVerified=true;
+        isVerified=false;
     }
 
 
@@ -57,11 +57,11 @@ const Add3PLColdStorage=async(req,res,next)=>{
         
 
         PL = new ThreePLColdstorage({
-            wareHouseLister: req.user.id,
+            Lister: req.user.id,
             isVerified,
             company_details,
             cold_storage_details,
-            isFeatured:true,
+            isFeatured:false,
         });
         
         // Save the PL object
@@ -107,21 +107,31 @@ const Add3PLColdStorage=async(req,res,next)=>{
 
 const AllPLColdStorage=async(req,res,next)=>{
     const id=req.user.id;
-        ThreePLColdstorage.find({ wareHouseLister: new mongoose.Types.ObjectId(id) })
-        .populate({
-            path: 'wareHouseLister',
-            select: '-password -refreshToken'
-          }) // Optional: populate the referenced Register data
-        .then((coldstorage) => {
-            if (coldstorage.length === 0) {
-                return next(ApiErrors(400,`No 3PL Cold Storage found with this wareHouseLister ID.`));
+        
+    const warehouse= await ThreePLColdstorage.aggregate([
+        {
+            $match:{
+                Lister: new mongoose.Types.ObjectId(id)
             }
-            return next(ApiResponses(200,coldstorage,'3PL Cold Storage List'));
-        })
-        .catch((error) => {
-            console.log(`Error finding 3PL ColdStorage: ${error}`);
-            return next(ApiErrors(500,`Error finding 3PL ColdStorage: ${error.message}`));
-        });
+        },
+        {
+            $project: {
+                name: '$company_details.company_name',
+                city: '$cold_storage_details.ColdStorageAddress.city',
+                price: '$cold_storage_details.AdditionDetails.DepositRent',
+                description: '$cold_storage_details.AdditionDetails.DescribeFacility',
+                image: { $arrayElemAt: ['$cold_storage_details.ColdStorageImage', 0] },
+                type: '$type',
+                isVerified : '$isVerified',
+                isFeatured : '$isFeatured'
+            }
+        }
+    ])
+
+    if (warehouse.length === 0) {
+        return next(ApiErrors(400,`No warehouse found with this Lister ID.`));
+    }
+    return next(ApiResponses(200,warehouse,'WareHouse List'));
 }
 
 const singlePLColdStorage=async(req,res,next)=>{
@@ -302,7 +312,7 @@ const DeletePLColdStorage=async(req,res,next)=>{
         const removePLColdStorage=await ThreePLColdstorage.findByIdAndDelete(id);
 
         if (removePLColdStorage){
-            return next(ApiResponses(200,"3PL Cold Storage deleted successfully"));
+            return next(ApiResponses(200,[],"3PL Cold Storage deleted successfully"));
         } else {
             return next(ApiErrors(404,"No 3PL Cold Storage found with the provided ID"));
         }        
@@ -319,9 +329,6 @@ module.exports={
     UpdatePLColdStorage,
     DeletePLColdStorage
 }
-
-
-
 
 // Error Handling
 

@@ -11,7 +11,7 @@ const upload=require('../middleware/ImageUpload/imageUploadMiddleware');
 const PLColdStorageController=require('../controller/3PLColdStorage.controller');
 
 // 3PL ColdStorage
-router.post('/add/ThreePL/Coldstorage',verifyToken.verify,verifyRoles(['WAREHOUSE', 'ADMIN']),upload.fields([{name:'cold_storage_details[ColdStorageImage]'}]),PLColdStorageController.Add3PLColdStorage);
+router.post('/add/ThreePL/Coldstorage',verifyToken.verify,verifyRoles(['LISTER', 'ADMIN']),upload.fields([{name:'cold_storage_details[ColdStorageImage]'}]),PLColdStorageController.Add3PLColdStorage);
 router.get('/get/3PL/ColdStorage/Lister/All',verifyToken.verify,PLColdStorageController.AllPLColdStorage);
 router.get('/get/3PL/ColdStorage/Lister/Single',verifyToken.verify,PLColdStorageController.singlePLColdStorage);
 router.put('/update/3PL/ColdStorage',verifyToken.verify,PLColdStorageController.UpdatePLColdStorage);
