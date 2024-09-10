@@ -61,10 +61,12 @@ const PLWarehouseRoute=require('./route/3PLWarehouse.route');
 const PLColdStorageRoute=require('./route/3PLColdstorage.route');
 const AdminRoute=require('./route/Admin.route');
 const FrontRoute=require('./route/Front.route')
+const LandRoute = require('./route/Land.route');
 app.use('/api',registerRoute);
 app.use('/api',warehouseRoute);
 app.use('/api',PLWarehouseRoute);
 app.use('/api',PLColdStorageRoute);
+app.use('/api/Land',LandRoute);
 app.use('/api/Admin',AdminRoute);
 app.use('/api/Front',FrontRoute)
 
