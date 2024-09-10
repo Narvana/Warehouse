@@ -127,7 +127,8 @@ const AllPLWarehouse=async(req,res,next)=>{
                 image: { $arrayElemAt: ['$warehouse_details.WarehouseImage', 0] },
                 type: '$type',
                 isVerified : '$isVerified',
-                isFeatured : '$isFeatured'
+                isFeatured : '$isFeatured',
+                WTRA: '$WTRA'
             }
         }
     ])

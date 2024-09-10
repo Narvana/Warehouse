@@ -20,7 +20,8 @@ const AllListing=async(req,res,next)=>{
                     image: { $arrayElemAt: ['$wareHouseImage', 0] }, 
                     type: '$type',
                     isVerified : '$isVerified',
-                    isFeatured : '$isFeatured'
+                    isFeatured : '$isFeatured',
+                    WTRA: '$WTRA'
                     },                    
             },
             {
@@ -37,7 +38,8 @@ const AllListing=async(req,res,next)=>{
                             image: { $arrayElemAt: ['$warehouse_details.WarehouseImage', 0] }, 
                             type: '$type',
                             isVerified : '$isVerified',
-                            isFeatured : '$isFeatured'
+                            isFeatured : '$isFeatured',
+                            WTRA: '$WTRA'
                           }, 
                     }
                   ] // Empty pipeline to return all documents
@@ -57,7 +59,8 @@ const AllListing=async(req,res,next)=>{
                             image: { $arrayElemAt: ['$cold_storage_details.ColdStorageImage', 0] },
                             type: '$type',
                             isVerified : '$isVerified',
-                            isFeatured : '$isFeatured'
+                            isFeatured : '$isFeatured',
+                            WTRA: { $ifNull: ['$WTRA', null] }
                         }, 
                     }
                   ]
@@ -76,7 +79,8 @@ const AllListing=async(req,res,next)=>{
                             image: { $arrayElemAt: ['$LandImage', 0] },
                             type: '$type',
                             isVerified : '$isVerified',
-                            isFeatured : '$isFeatured'
+                            isFeatured : '$isFeatured',
+                            WTRA: { $ifNull: ['$WTRA', null] }
                         }, 
                     }
                   ]
@@ -113,7 +117,8 @@ const AllFeatured=async(req,res,next)=>{
                   image: { $arrayElemAt: ['$wareHouseImage', 0] }, 
                   type: '$type',
                   isVerified : '$isVerified',
-                  isFeatured : '$isFeatured'
+                  isFeatured : '$isFeatured',
+                  WTRA: '$WTRA'
                 },
             },
             {
@@ -134,7 +139,8 @@ const AllFeatured=async(req,res,next)=>{
                                 image: { $arrayElemAt: ['$warehouse_details.WarehouseImage', 0] }, 
                                 type: '$type',
                                 isVerified : '$isVerified',
-                                isFeatured : '$isFeatured'
+                                isFeatured : '$isFeatured',
+                                WTRA: '$WTRA'
                               }, 
                         }
                     ]
@@ -158,7 +164,8 @@ const AllFeatured=async(req,res,next)=>{
                                 image: { $arrayElemAt: ['$cold_storage_details.ColdStorageImage', 0] },
                                 type: '$type',
                                 isVerified : '$isVerified',
-                                isFeatured : '$isFeatured'
+                                isFeatured : '$isFeatured',
+                                WTRA: { $ifNull: ['$WTRA', null] }
                               }, 
                         }
                     ]
@@ -182,8 +189,8 @@ const AllFeatured=async(req,res,next)=>{
                             image: { $arrayElemAt: ['$LandImage', 0] },
                             type: '$type',
                             isVerified : '$isVerified',
-                            isFeatured : '$isFeatured'
-
+                            isFeatured : '$isFeatured',
+                            WTRA: { $ifNull: ['$WTRA', null] }
                         }, 
                     }
                   ]
@@ -228,7 +235,8 @@ const recentWarehouse=async(req,res,next)=>{
                     image: { $arrayElemAt: ['$wareHouseImage', 0] }, 
                     type: '$type',
                     isVerified : '$isVerified',
-                    isFeatured : '$isFeatured'
+                    isFeatured : '$isFeatured',
+                    WTRA: '$WTRA'
                 }
             },
             {
@@ -258,7 +266,8 @@ const recentWarehouse=async(req,res,next)=>{
                                 image: { $arrayElemAt: ['$warehouse_details.WarehouseImage', 0] },
                                 type: '$type',
                                 isVerified : '$isVerified',
-                                isFeatured : '$isFeatured'
+                                isFeatured : '$isFeatured',
+                                WTRA: '$WTRA'
                             }
                         }
                     ]
@@ -290,7 +299,8 @@ const recentWarehouse=async(req,res,next)=>{
                                 image: { $arrayElemAt: ['$cold_storage_details.ColdStorageImage', 0] },
                                 type: '$type',
                                 isVerified : '$isVerified',
-                                isFeatured : '$isFeatured'
+                                isFeatured : '$isFeatured',
+                                WTRA: { $ifNull: ['$WTRA', null] }
                             }
                         }
                     ]
@@ -322,7 +332,8 @@ const recentWarehouse=async(req,res,next)=>{
                             image: { $arrayElemAt: ['$LandImage', 0] },
                             type: '$type',
                             isVerified : '$isVerified',
-                            isFeatured : '$isFeatured'
+                            isFeatured : '$isFeatured',
+                            WTRA: { $ifNull: ['$WTRA', null] }
                         }, 
                     }
                   ]
@@ -416,7 +427,8 @@ const searchWareHouseAll=async(req,res,next)=>{
                     image: { $arrayElemAt: ['$wareHouseImage', 0] },
                     type: '$type',
                     isVerified : '$isVerified',
-                    isFeatured : '$isFeatured'
+                    isFeatured : '$isFeatured',
+                    WTRA: '$WTRA'
                 }
             },
             {
@@ -435,7 +447,8 @@ const searchWareHouseAll=async(req,res,next)=>{
                                 image: { $arrayElemAt: ['$warehouse_details.WarehouseImage', 0] },
                                 type: '$type',
                                 isVerified : '$isVerified',
-                                isFeatured : '$isFeatured'
+                                isFeatured : '$isFeatured',
+                                WTRA: '$WTRA'
                             }
                         }
                     ]
@@ -457,7 +470,8 @@ const searchWareHouseAll=async(req,res,next)=>{
                                 image: { $arrayElemAt: ['$cold_storage_details.ColdStorageImage', 0] },
                                 type: '$type',
                                 isVerified : '$isVerified',
-                                isFeatured : '$isFeatured'
+                                isFeatured : '$isFeatured',
+                                WTRA: { $ifNull: ['$WTRA', null] }
                             }
                         }
                     ]
@@ -479,7 +493,8 @@ const searchWareHouseAll=async(req,res,next)=>{
                             image: { $arrayElemAt: ['$LandImage', 0] },
                             type: '$type',
                             isVerified : '$isVerified',
-                            isFeatured : '$isFeatured'
+                            isFeatured : '$isFeatured',
+                            WTRA: { $ifNull: ['$WTRA', null] }
                         }, 
                     }
                   ]

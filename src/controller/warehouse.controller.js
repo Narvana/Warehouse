@@ -120,7 +120,8 @@ const getListerAllWarehouse=async(req,res,next)=>{
                     image: { $arrayElemAt: ['$wareHouseImage', 0] },
                     type: '$type',
                     isVerified : '$isVerified',
-                    isFeatured : '$isFeatured'
+                    isFeatured : '$isFeatured',
+                    WTRA: '$WTRA'
                 }
             }
         ]);

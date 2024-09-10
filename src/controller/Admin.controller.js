@@ -139,8 +139,9 @@ const allListing=async(req,res,next)=>{
                     // image: { $arrayElemAt: ['$wareHouseImage', 0] }, 
                     type: '$type',
                     isVerified : '$isVerified',
-                    isFeatured : '$isFeatured'
-                    },                    
+                    isFeatured : '$isFeatured',
+                    WTRA: '$WTRA'
+                },                    
             },
             {
                 $unionWith: {
@@ -158,8 +159,9 @@ const allListing=async(req,res,next)=>{
                             // image: { $arrayElemAt: ['$warehouse_details.WarehouseImage', 0] }, 
                             type: '$type',
                             isVerified : '$isVerified',
-                            isFeatured : '$isFeatured'
-                          }, 
+                            isFeatured : '$isFeatured',
+                            WTRA: '$WTRA'
+                        }, 
                     }
                   ] // Empty pipeline to return all documents
                   
@@ -181,7 +183,8 @@ const allListing=async(req,res,next)=>{
                             // image: { $arrayElemAt: ['$cold_storage_details.ColdStorageImage', 0] },
                             type: '$type',
                             isVerified : '$isVerified',
-                            isFeatured : '$isFeatured'
+                            isFeatured : '$isFeatured',
+                            WTRA: { $ifNull: ['$WTRA', null] }
                         }, 
                     }
                   ]
@@ -202,7 +205,8 @@ const allListing=async(req,res,next)=>{
                             // image: { $arrayElemAt: ['$LandImage', 0] },
                             type: '$type',
                             isVerified : '$isVerified',
-                            isFeatured : '$isFeatured'
+                            isFeatured : '$isFeatured',
+                            WTRA: { $ifNull: ['$WTRA', null] }
                         }, 
                     }
                   ]
