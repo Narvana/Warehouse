@@ -20,4 +20,6 @@ router.put('/Featured/Status',verifyToken.verify,verifyRole('ADMIN'),AdminContro
 
 router.get('/Enquiry/List',AdminController.EnquiryList);
 
+router.get('/Listers/List',AdminController.ListerList);
+
 module.exports=router

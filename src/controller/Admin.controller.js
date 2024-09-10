@@ -294,10 +294,67 @@ const EnquiryList = async (req,res,next) =>{
     }
 } 
 
+const ListerList= async(req,res,next) => {
+
+    const Lister = await Register.aggregate([
+        {
+            $match : {
+                    role:'LISTER'
+            },
+        },
+        {
+            $lookup: {
+                from: 'warehouses', // Collection name for Warehouse
+                localField: '_id', // Field in Register
+                foreignField: 'Lister', // Field in Warehouse
+                as: 'warehouses',
+            }
+        },
+        {
+            $lookup: {
+                from: 'threeplcoldstorages', // Collection name for ThreePLColdStorage
+                localField: '_id',
+                foreignField: 'Lister', // Field in ThreePLColdStorage
+                as: 'coldStorages',
+            }
+        },
+        {
+            $lookup: {
+                from: 'threeplwarehouses', // Collection name for ThreePLWarehouse
+                localField: '_id',
+                foreignField: 'Lister', // Field in ThreePLWarehouse
+                as: 'plWarehouses',
+            }
+        },
+        {
+            $lookup:{
+                from: 'landmodels',
+                localField: '_id',
+                foreignField: 'Lister',
+                as: 'land'
+            }
+        },
+        {
+            $project: {
+                firstname: 1, // Lister's firstname
+                lastname: 1, // Lister's lastname
+                email: 1, // Lister's email
+                contactNo: 1, // Lister's contact number
+                warehouseCount: { $size: '$warehouses' }, // Count of associated warehouses
+                coldStorageCount: { $size: '$coldStorages' }, // Count of associated cold storages
+                plWarehouseCount: { $size: '$plWarehouses' }, // Count of associated PL warehouses
+                landCount: { $size: '$land' }
+            }
+        } 
+    ]);
+    return next(ApiResponses(200,Lister,`Lister's List Detail`));
+}
+
 
 module.exports={
    UpdateVerifiedStatus,
    allListing,
    UpdateFeatureStatus,
-   EnquiryList
+   EnquiryList,
+   ListerList
 }
