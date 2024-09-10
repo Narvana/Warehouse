@@ -95,7 +95,8 @@ const warehouseSchema = new mongoose.Schema({
     },
     WTRA:{
         type:Boolean,
-        required:[true, 'WTRA Norms Feild is Required'],
+        default:false
+        // required:[true, 'WTRA Norms Feild is Required'],
     },
     floorRent: {
         // floors: [floorSchema], // Use correct array notation

@@ -51,7 +51,8 @@ const ThreePLWarehouseSchema= new mongoose.Schema({
     type:{type:String,default:"PLWAREHOUSE",immutable: true },
     WTRA:{
         type:Boolean,
-        required:[true, 'WTRA Norms Feild is Required'],
+        // required:[true, 'WTRA Norms Feild is Required'],
+        default:false,
     },
     warehouse_details:{
         features: [String],  
