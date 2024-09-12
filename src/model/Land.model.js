@@ -25,13 +25,14 @@ const LandSchema= new mongoose.Schema({
         }
     },
     AdditionalDetails:{
-        InterestedIn:{
-            type:[String],
-            enum:{
-                values:['Sale','BTS (Build to Suite)', 'CLU (Conversion of Land Use)', 'Contract Farming', 'Lease'],
-                message: '{VALUE} is not a valid feild. It must be  Sale,BTS (Build to Suite), CLU (Conversion of Land Use), Contract Farming, Lease',
-            }
-        },
+        InterestedIn:[String],
+        // {
+        //     type:[String],
+        //     enum:{
+        //         values:['Sale','BTS (Build to Suite)', 'CLU (Conversion of Land Use)', 'Contract Farming', 'Lease'],
+        //         message: '{VALUE} is not a valid feild. It must be  Sale,BTS (Build to Suite), CLU (Conversion of Land Use), Contract Farming, Lease',
+        //     }
+        // },
         SalePrice:{
             type:Number
         },
