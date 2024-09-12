@@ -85,7 +85,8 @@ const AddLand=async(req,res,next)=>{
             }
             else
             {
-                return next(ApiErrors(500,`Internal Serve Error, ${error}`));
+                console.log({ ERROR : error });
+                return next(ApiErrors(500,`Internal Serve Error, ${error.message}`));
             }
     }
 }
@@ -187,7 +188,7 @@ const UpdateListedLand=async(req,res,next)=>{
 
         if(imageURL.length > 0)
         {
-           LandImage = [...req.body.LandImage, ...imageURL]; 
+           LandImage = [...req.body.LandImage, ...imageURL];
         }
         else if(req.body.LandImage)
         {

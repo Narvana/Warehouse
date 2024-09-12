@@ -13,7 +13,7 @@ const LandController=require('../controller/Land.controller');
 // 3PL ColdStorage
 router.post('/add',verifyToken.verify,verifyRoles(['LISTER', 'ADMIN']),upload.fields([{name:'LandImage'}]),LandController.AddLand);
 router.get('/get/Lister/All',verifyToken.verify,LandController.AllLandLister);
-router.get('/get/Lister/Single',verifyToken.verify,LandController.ListerSingleLand);
+router.get('/get/Lister/Single',LandController.ListerSingleLand);
 router.put('/Update',verifyToken.verify,LandController.UpdateListedLand);
 router.delete('/Delete',verifyToken.verify,LandController.RemoveLand);
 
