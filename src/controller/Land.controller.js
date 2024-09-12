@@ -93,10 +93,26 @@ const AddLand=async(req,res,next)=>{
 const AllLandLister = async(req,res,next)=>{
     const id=req.user.id;
 
-    const Land=await LandModel.find({Lister: new mongoose.Types.ObjectId(id)}).populate({
-        path : 'Lister',
-        select : '-password -refreshToken' 
-    })
+    const Land=await LandModel.aggregate([
+        {
+            $match:{
+                Lister: new mongoose.Types.ObjectId(id)
+            }
+        },
+        {
+            $project:{
+                name: '$basicInfo.name',
+                city: '$basicInfo.city',
+                price: '$AdditionalDetails.SalePrice',
+                description: '$AdditionalDetails.SpecialRemark',
+                image: { $arrayElemAt: ['$LandImage', 0] },
+                type: '$type',
+                isVerified : '$isVerified',
+                isFeatured : '$isFeatured',
+                WTRA: { $ifNull: ['$WTRA', null] }
+            }
+        }
+    ]);
 
     if(Land.length > 0)
     {
