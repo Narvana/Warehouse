@@ -370,21 +370,21 @@ const searchWareHouseAll=async(req,res,next)=>{
         warehouseMatchConditions['basicInfo.city'] = city;
         threePLWarehouseMatchConditions['warehouse_details.warehouseAddress.city'] = city;
         threePLColdstorageMatchConditions['cold_storage_details.ColdStorageAddress.city'] = city;
-        landConditions[basicInfo.city] = city;
+        landConditions['basicInfo.city'] = city;
     }
-    
+     
     if (price) {
         const priceCondition = { $lte: parseFloat(price) }; // Less than or equal to the given price
         warehouseMatchConditions['floorRent.expectedRent'] = priceCondition;
         threePLWarehouseMatchConditions['warehouse_details.otherDetails.DepositRent'] = priceCondition;
         threePLColdstorageMatchConditions['cold_storage_details.AdditionDetails.DepositRent'] = priceCondition;
-        landConditions[AdditionalDetails.SalePrice] = price;
+        landConditions['AdditionalDetails.SalePrice'] = price;
     }
     
     if (propertytype) {
         warehouseMatchConditions['layout.warehouseType'] = propertytype;
         threePLWarehouseMatchConditions['warehouse_details.Storage.PropertyType'] = propertytype;
-        threePLColdstorageMatchConditions['cold_storage_details.ColdStorageFacility.PropertyType'] =propertytype;
+        threePLColdstorageMatchConditions['cold_storage_details.ColdStorageFacility.PropertyType'] = propertytype;
     }
 
     if (area) {
@@ -508,6 +508,7 @@ const searchWareHouseAll=async(req,res,next)=>{
     
         return next(ApiResponses(200, Result, 'Warehouse Details'));
     } catch (error) {
+        console.log({error});        
         return next(ApiErrors(500, `Error retrieving warehouse: ${error.message}`));
     }    
 }
