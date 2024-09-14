@@ -7,6 +7,7 @@ const ThreePLWarehouse=require('../model/3PL.Warehouse.model');
 const mongoose = require('mongoose');
 const ApiErrors=require('../utils/ApiResponse/ApiErrors');
 const ApiResponses=require('../utils/ApiResponse/ApiResponse');
+const Requirement = require('../model/Requirement.model');
 
 const AllListing=async(req,res,next)=>{
     try {
@@ -542,7 +543,34 @@ const SendEnquiry = async(req,res,next)=>{
     } catch (error) {
         return next(ApiErrors(500,`Internal Server Error -: ${error.message}`)); 
     }
+}
 
+const SendRequirement=async(req,res,next)=>{
+
+    const { lookingFor, name, email, mobileNo, company_name, describe } = req.body;
+
+    try {
+        const requirement = new Requirement({
+            lookingFor,
+            name,
+            email,
+            mobileNo,
+            company_name,
+            describe
+        });
+    
+        await requirement.save(); // Save the requirement to the database
+        return next(ApiResponses(200, requirement, 'Requirement saved successfully'));
+    } catch (error) {
+        if(error.name === 'ValidationError')
+            {
+                const errorMessages = Object.values(error.errors).map(error => error.message);
+                console.log({ ERROR : error });
+                return next(ApiErrors(500,errorMessages[0]));            
+            }
+        return next(ApiErrors(500, `Error while saving requirement: ${error.message}`));
+    }
+    
 }
 
 module.exports={
@@ -552,6 +580,7 @@ module.exports={
     recentWarehouse,
     AllListing,
     SendEnquiry,
+    SendRequirement,
 }
 
 // const AllVerified=async(req,res,next)=>{
