@@ -9,6 +9,7 @@ const ApiErrors=require('../utils/ApiResponse/ApiErrors');
 const ApiResponses=require('../utils/ApiResponse/ApiResponse');
 const { database } = require('firebase-admin');
 const Enquiry = require('../model/Enquiry.model');
+const Requirement = require('../model/Requirement.model');
 
 const UpdateVerifiedStatus=async(req,res,next)=>{
     const checkUser=await Register.findOne({_id:req.user.id});
@@ -354,11 +355,133 @@ const ListerList= async(req,res,next) => {
     return next(ApiResponses(200,Lister,`Lister's List Detail`));
 }
 
+const RequirementList = async(req,res,next)=>{
+    const requirement = await Requirement.find();
+    // return res.json(requirement.length);
+    if(requirement.length > 0)
+    {
+        return next(ApiResponses(200, requirement, 'Requirement List'));
+    }
+    return next(ApiErrors(404, `No requirment List found`)); 
+
+}
+
+const RemoveRequirement= async(req,res,next)=>{
+    const checkUser=await Register.findOne({_id:req.user.id});
+
+    if(!checkUser)
+    {
+        return next(ApiErrors(401,"Unauthenticaed User. Your Data do not exist in the database"));   
+    }
+    if(req.user.id != checkUser._id)
+    {
+        return next(ApiErrors(401,"Unauthenticaed User. You are not allowed to add products"));
+    }
+    if(req.user.role !== req.role)
+    {
+        return next(ApiErrors(403,"Access Denied. Only Admin can Change the verified Status"));
+    }
+    const id=req.query.id;
+    if(!id)
+    {
+        return next(ApiErrors(400,"Provide the ID of the Requirement that you want to remove")); 
+    } 
+
+    await Requirement.findByIdAndDelete(id)
+    .then(() => {
+        return next(ApiResponses(200, [], 'Enquiry deleted successfully'));
+    })
+    .catch((error) => {
+        return next(ApiErrors(500, `Error while deleting: ${error.message}`));
+    });
+}
+
+// const RemoveLister = async(req,res,next)=>{
+// }
+
+const RemoveListing = async(req,res,next)=>{
+           
+    const checkUser=await Register.findOne({_id:req.user.id});
+
+    if(!checkUser)
+    {
+        return next(ApiErrors(401,"Unauthenticaed User. Your Data do not exist in the database"));   
+    }
+    if(req.user.id != checkUser._id)
+    {
+        return next(ApiErrors(401,"Unauthenticaed User. You are not allowed to add products"));
+    }
+    if(req.user.role !== req.role)
+    {
+        return next(ApiErrors(403,"Access Denied. Only Admin can Change the verified Status"));
+    }
+    const id=req.query.id;
+    if(!id)
+    {
+        return next(ApiErrors(400,"Provide the ID of the Enquiry that you want to remove")); 
+    } 
+    const models = [Warehouse, ThreePLWarehouse, ThreePLColdstorage, LandModel ];
+
+    // let data = null;
+
+    for (const model of models) {
+        const found = await model.findOne({_id: id});
+    
+        if (found) {
+         await model.findByIdAndDelete(id)
+         .then(() => {
+            return next(ApiResponses(200, [], 'Listing Removed successfully'));
+        })
+        .catch((error) => {
+            return next(ApiErrors(500, `Error while deleting: ${error.message}`));
+        });
+        
+        break;
+        }
+    }        
+    
+}
+
+const RemoveEnquiry = async(req,res,next)=>{
+    const checkUser=await Register.findOne({_id:req.user.id});
+
+    if(!checkUser)
+    {
+        return next(ApiErrors(401,"Unauthenticaed User. Your Data do not exist in the database"));   
+    }
+    if(req.user.id != checkUser._id)
+    {
+        return next(ApiErrors(401,"Unauthenticaed User. You are not allowed to add products"));
+    }
+    if(req.user.role !== req.role)
+    {
+        return next(ApiErrors(403,"Access Denied. Only Admin can Change the verified Status"));
+    }
+    const id=req.query.id;
+    if(!id)
+    {
+        return next(ApiErrors(400,"Provide the ID of the Enquiry that you want to remove")); 
+    } 
+
+    await Enquiry.findByIdAndDelete(id)
+    .then(() => {
+        return next(ApiResponses(200, [], 'Enquiry deleted successfully'));
+    })
+    .catch((error) => {
+        return next(ApiErrors(500, `Error while deleting: ${error.message}`));
+    });
+}
+
+
 
 module.exports={
    UpdateVerifiedStatus,
    allListing,
    UpdateFeatureStatus,
    EnquiryList,
-   ListerList
+   ListerList,
+   RemoveEnquiry,
+   RemoveListing,
+   RequirementList,
+   RemoveRequirement
 }

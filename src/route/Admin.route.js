@@ -22,4 +22,12 @@ router.get('/Enquiry/List',AdminController.EnquiryList);
 
 router.get('/Listers/List',AdminController.ListerList);
 
+router.delete('/Remove/Enquiry',verifyToken.verify,verifyRole('ADMIN'),AdminController.RemoveEnquiry);
+
+router.delete('/Remove/Listing',verifyToken.verify,verifyRole('ADMIN'),AdminController.RemoveListing);
+
+router.get('/Requirement/List',AdminController.RequirementList);
+
+router.delete('/Remove/Requirement',verifyToken.verify,verifyRole('ADMIN'),AdminController.RemoveRequirement);
+
 module.exports=router
