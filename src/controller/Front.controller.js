@@ -529,9 +529,14 @@ const SendEnquiry = async(req,res,next)=>{
         {
             return next(ApiErrors(400,'Please Provide Both the feild Listing ID and Listing Model to send Enquiry')); 
         }
-        // const modelExists = await Warehouse.exists({ _id: ListingID });
-        
-        // return res.json(modelExists);
+        const EnquiryExist = await Enquiry.findOne({
+            UserID,
+            ListingID
+        });
+        if(EnquiryExist)
+        {
+            return next(ApiErrors(400,'You have already Enquired for this Listing')); 
+        }
 
         const enquiry = new Enquiry({
             UserID,
