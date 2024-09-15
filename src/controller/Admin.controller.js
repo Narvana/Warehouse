@@ -233,6 +233,10 @@ const EnquiryList = async (req,res,next) =>{
             path: "UserID",
             select: "-_id firstname lastname email contactNo"
         }).lean();
+        if(List.length === 0)
+        {
+            return next(ApiErrors(404,`No Enquiry Found`));    
+        }
 
         for (let enquiry of List) 
         {
@@ -420,25 +424,29 @@ const RemoveListing = async(req,res,next)=>{
     {
         return next(ApiErrors(400,"Provide the ID of the Enquiry that you want to remove")); 
     } 
-    const models = [Warehouse, ThreePLWarehouse, ThreePLColdstorage, LandModel ];
+    const models = [Warehouse, ThreePLWarehouse, ThreePLColdstorage, LandModel];
 
-    // let data = null;
-
-    for (const model of models) {
-        const found = await model.findOne({_id: id});
-    
-        if (found) {
-         await model.findByIdAndDelete(id)
-         .then(() => {
-            return next(ApiResponses(200, [], 'Listing Removed successfully'));
-        })
-        .catch((error) => {
-            return next(ApiErrors(500, `Error while deleting: ${error.message}`));
-        });
+    try {
+        for (const model of models) {
+            const found = await model.findOne({ _id: id });
         
-        break;
+            if (found) {
+
+                await model.findByIdAndDelete(id);
+    
+                await Enquiry.deleteMany({ 
+                    ListingID: { $in: id }
+                });
+    
+                return next(ApiResponses(200, [], 'Listing Removed successfully'));
+            }
         }
-    }        
+        // If no record was found in any of the models
+        return next(ApiErrors(404, 'Listing not found'));
+    } catch (error) {
+        return next(ApiErrors(500, `Error while deleting: ${error.message}`));
+    }
+    
     
 }
 
