@@ -358,28 +358,43 @@ const recentWarehouse=async(req,res,next)=>{
 
 
 // Search API
-const searchWareHouseAll=async(req,res,next)=>{
-    const { city, price, propertytype, type, area, verified } = req.query;
+const searchWareHouseAll=async(req,res,next)=>
+{
+    const { city, price, propertytype, type, area, verified, locality } = req.query;
 
     const warehouseMatchConditions = {};
     const threePLWarehouseMatchConditions = {};
     const threePLColdstorageMatchConditions = {};
-    const landConditions = {}; 
+    const landConditions = {};
+    const smallspace = {};
     
-    // Adding conditions dynamically based on provided parameters
+    if (locality && !city) {
+        return next(ApiErrors(400, "Please provide a city when searching by locality."));
+    }
+    
     if (city) {
         warehouseMatchConditions['basicInfo.city'] = city;
         threePLWarehouseMatchConditions['warehouse_details.warehouseAddress.city'] = city;
         threePLColdstorageMatchConditions['cold_storage_details.ColdStorageAddress.city'] = city;
         landConditions['basicInfo.city'] = city;
+        smallspace['basicInfo.city'] = city;
     }
-     
+    
+    if(locality && city){
+        warehouseMatchConditions['basicInfo.locality'] = locality;
+        threePLWarehouseMatchConditions['warehouse_details.warehouseAddress.area'] = locality;
+        threePLColdstorageMatchConditions['cold_storage_details.ColdStorageAddress.area'] = locality;
+        landConditions['basicInfo.locality'] = locality;
+        smallspace['basicInfo.locality'] = city;
+    }
+    
     if (price) {
-        const priceCondition = { $lte: parseFloat(price) }; // Less than or equal to the given price
+        const priceCondition = { $lte: parseFloat(price) };
         warehouseMatchConditions['floorRent.expectedRent'] = priceCondition;
         threePLWarehouseMatchConditions['warehouse_details.otherDetails.DepositRent'] = priceCondition;
         threePLColdstorageMatchConditions['cold_storage_details.AdditionDetails.DepositRent'] = priceCondition;
         landConditions['AdditionalDetails.SalePrice'] = price;
+        smallspace['SmallSpaceDetails.expectedRent'] = city;
     }
     
     if (propertytype) {
@@ -387,35 +402,35 @@ const searchWareHouseAll=async(req,res,next)=>{
         threePLWarehouseMatchConditions['warehouse_details.Storage.PropertyType'] = propertytype;
         threePLColdstorageMatchConditions['cold_storage_details.ColdStorageFacility.PropertyType'] = propertytype;
     }
-
+    
     if (area) {
-        const selectArea = {$lte:parseFloat(area)}; 
+        const selectArea = {$lte: parseFloat(area)};
         warehouseMatchConditions['layout.totalPlotArea'] = selectArea;
         threePLWarehouseMatchConditions['warehouse_details.Storage.TotalArea'] = selectArea;
         threePLColdstorageMatchConditions['cold_storage_details.ColdStorageFacility.TotalArea'] = selectArea;
+        smallspace['SmallSpaceDetails.totalPlotArea'] = city;
     }
-
+    
     if (type) {
         warehouseMatchConditions['type'] = type;
         threePLWarehouseMatchConditions['type'] = type;
-        threePLColdstorageMatchConditions['type'] =type;
+        threePLColdstorageMatchConditions['type'] = type;
         landConditions['type'] = type;
+        smallspace['type'] = type;
     }
-
-    if (verified)
-    {
-
-        const  verifiedStatus = verified === 'true';
-
+    
+    if (verified) {
+        const verifiedStatus = verified === 'true';
         warehouseMatchConditions['isVerified'] = verifiedStatus;
         threePLWarehouseMatchConditions['isVerified'] = verifiedStatus;
         threePLColdstorageMatchConditions['isVerified'] = verifiedStatus;
         landConditions['isVerified'] = verifiedStatus;
-    
+        smallspace['isVerified'] = verifiedStatus;
     }
-    
-    try {
-        const Result = await Warehouse.aggregate([
+
+    try 
+    {
+        Result = await Warehouse.aggregate([
             {
                 $match: warehouseMatchConditions,
             },
@@ -423,6 +438,7 @@ const searchWareHouseAll=async(req,res,next)=>{
                 $project: {
                     name: '$basicInfo.name',
                     city: '$basicInfo.city',
+                    locality : '$basicInfo.locality',
                     price: '$floorRent.expectedRent',
                     description: '$wareHouseDescription',
                     image: { $arrayElemAt: ['$wareHouseImage', 0] },
@@ -443,6 +459,7 @@ const searchWareHouseAll=async(req,res,next)=>{
                             $project: {
                                 name: '$company_details.company_name',
                                 city: '$warehouse_details.warehouseAddress.city',
+                                locality : '$warehouse_details.warehouseAddress.area',
                                 price: '$warehouse_details.otherDetails.DepositRent',
                                 description: '$warehouse_details.otherDetails.DescribeFacility',
                                 image: { $arrayElemAt: ['$warehouse_details.WarehouseImage', 0] },
@@ -466,6 +483,7 @@ const searchWareHouseAll=async(req,res,next)=>{
                             $project: {
                                 name: '$company_details.company_name',
                                 city: '$cold_storage_details.ColdStorageAddress.city',
+                                locality : '$cold_storage_details.ColdStorageAddress.area',
                                 price: '$cold_storage_details.AdditionDetails.DepositRent',
                                 description: '$cold_storage_details.AdditionDetails.DescribeFacility',
                                 image: { $arrayElemAt: ['$cold_storage_details.ColdStorageImage', 0] },
@@ -489,6 +507,154 @@ const searchWareHouseAll=async(req,res,next)=>{
                         $project: {
                             name: '$basicInfo.name',
                             city: '$basicInfo.city',
+                            locality : '$basicInfo.locality',
+                            price: '$AdditionalDetails.SalePrice',
+                            description: '$AdditionalDetails.SpecialRemark',
+                            image: { $arrayElemAt: ['$LandImage', 0] },
+                            type: '$type',
+                            isVerified : '$isVerified',
+                            isFeatured : '$isFeatured',
+                            WTRA: { $ifNull: ['$WTRA', null] }
+                        }, 
+                    }
+                  ]
+                }
+            },
+            {
+                $unionWith: {
+                  coll: 'smallspaces', // Correct collection name
+                  pipeline: [
+                    {
+                        $match: smallspace
+                    },
+                    {
+                        $project: {
+                            name: '$basicInfo.name',
+                            city: '$basicInfo.city',
+                            locality : '$basicInfo.locality',
+                            price: '$SmallSpaceDetails.expectedRent',
+                            description: '$SmallSpaceDescription',
+                            image: { $arrayElemAt: ['$SmallSpaceImage', 0] },
+                            type: '$type',
+                            isVerified : '$isVerified',
+                            isFeatured : '$isFeatured',
+                            WTRA: { $ifNull: ['$WTRA', null] }
+                        }, 
+                    }
+                  ]
+                }
+            }
+        ]);
+
+        if (Result.length === 0 && locality && city) {
+
+        delete warehouseMatchConditions['basicInfo.locality'];
+        delete threePLWarehouseMatchConditions['warehouse_details.warehouseAddress.area'];
+        delete threePLColdstorageMatchConditions['cold_storage_details.ColdStorageAddress.area'];
+        delete landConditions['basicInfo.locality'];
+
+        Result = await Warehouse.aggregate([
+            {
+                $match: warehouseMatchConditions,
+            },
+            {
+                $project: {
+                    name: '$basicInfo.name',
+                    city: '$basicInfo.city',
+                    locality : '$basicInfo.locality',
+                    price: '$floorRent.expectedRent',
+                    description: '$wareHouseDescription',
+                    image: { $arrayElemAt: ['$wareHouseImage', 0] },
+                    type: '$type',
+                    isVerified : '$isVerified',
+                    isFeatured : '$isFeatured',
+                    WTRA: '$WTRA'
+                }
+            },
+            {
+                $unionWith: {
+                    coll: 'threeplwarehouses',
+                    pipeline: [
+                        {
+                            $match: threePLWarehouseMatchConditions,
+                        },
+                        {
+                            $project: {
+                                name: '$company_details.company_name',
+                                city: '$warehouse_details.warehouseAddress.city',
+                                locality : '$warehouse_details.warehouseAddress.area',
+                                price: '$warehouse_details.otherDetails.DepositRent',
+                                description: '$warehouse_details.otherDetails.DescribeFacility',
+                                image: { $arrayElemAt: ['$warehouse_details.WarehouseImage', 0] },
+                                type: '$type',
+                                isVerified : '$isVerified',
+                                isFeatured : '$isFeatured',
+                                WTRA: '$WTRA'
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                $unionWith: {
+                    coll: 'threeplcoldstorages',
+                    pipeline: [
+                        {
+                            $match: threePLColdstorageMatchConditions,
+                        },
+                        {
+                            $project: {
+                                name: '$company_details.company_name',
+                                city: '$cold_storage_details.ColdStorageAddress.city',
+                                locality : '$cold_storage_details.ColdStorageAddress.area',
+                                price: '$cold_storage_details.AdditionDetails.DepositRent',
+                                description: '$cold_storage_details.AdditionDetails.DescribeFacility',
+                                image: { $arrayElemAt: ['$cold_storage_details.ColdStorageImage', 0] },
+                                type: '$type',
+                                isVerified : '$isVerified',
+                                isFeatured : '$isFeatured',
+                                WTRA: { $ifNull: ['$WTRA', null] }
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                $unionWith: {
+                  coll: 'landmodels', // Correct collection name
+                  pipeline: [
+                    {
+                        $match: landConditions
+                    },
+                    {
+                        $project: {
+                            name: '$basicInfo.name',
+                            city: '$basicInfo.city',
+                            locality : '$basicInfo.locality',
+                            price: '$AdditionalDetails.SalePrice',
+                            description: '$AdditionalDetails.SpecialRemark',
+                            image: { $arrayElemAt: ['$LandImage', 0] },
+                            type: '$type',
+                            isVerified : '$isVerified',
+                            isFeatured : '$isFeatured',
+                            WTRA: { $ifNull: ['$WTRA', null] }
+                        }, 
+                    }
+                  ]
+                }
+              },
+              {
+                $unionWith: {
+                  coll: 'smallspaces', // Correct collection name
+                  pipeline: [
+                    {
+                        $match: landConditions
+                    },
+                    {
+                        $project: {
+                            name: '$basicInfo.name',
+                            city: '$basicInfo.city',
+                            locality : '$basicInfo.locality',
                             price: '$AdditionalDetails.SalePrice',
                             description: '$AdditionalDetails.SpecialRemark',
                             image: { $arrayElemAt: ['$LandImage', 0] },
@@ -502,11 +668,11 @@ const searchWareHouseAll=async(req,res,next)=>{
                 }
               }
         ]);
-    
+        }
+
         if (Result.length === 0) {
             return next(ApiErrors(404, `No warehouse found matching the criteria`));
         }
-    
         return next(ApiResponses(200, Result, 'Warehouse Details'));
     } catch (error) {
         console.log({error});        
