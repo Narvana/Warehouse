@@ -197,13 +197,11 @@ const UpdateWarehouse=async(req,res,next)=>{
             await Promise.all(
                 base64.map(async (file)=>{
                     uploadResult = await uploadBase64ToFirebase(file);
-
                     link = uploadResult;
                     imageURL.push(link);
                 })
             )
         }
-
 
         if(imageURL.length > 0)
         {
@@ -321,14 +319,14 @@ const DeleteWarehouse=async(req,res,next)=>{
     
     if(req.user.id != checkUser._id)
     {
-        return next(ApiErrors(401,"Unauthenticaed User. You are not allowed to add products"));
+        return next(ApiErrors(401,"Unauthenticaed User. You are not allowed to remove Listing"));
     }
     
     const id=req.query.id;
 
     if(!id)
     {
-        return next(ApiErrors(400,"Provide id to update the Warehouse"));
+        return next(ApiErrors(400,"Provide id to Remove the Warehouse"));
     }
     try {
         const removeWarehouse=await Warehouse.findByIdAndDelete(id);
@@ -339,7 +337,7 @@ const DeleteWarehouse=async(req,res,next)=>{
             return next(ApiErrors(404,"No warehouse found with the provided ID"));
         }        
     } catch (error) {
-        console.error('Error updating warehouse:', error);
+        console.error('Error Removing warehouse:', error);
         return next(ApiErrors(500,`Internal Serve Error, Error -: ${error.message}`));  
     }   
 }
