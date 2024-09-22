@@ -62,13 +62,17 @@ const PLColdStorageRoute=require('./route/3PLColdstorage.route');
 const AdminRoute=require('./route/Admin.route');
 const FrontRoute=require('./route/Front.route')
 const LandRoute = require('./route/Land.route');
+const SmallSpace=require('./route/SmallSpace.route');
+const OTP=require('./route/OTP.route');
 app.use('/api',registerRoute);
 app.use('/api',warehouseRoute);
 app.use('/api',PLWarehouseRoute);
 app.use('/api',PLColdStorageRoute);
 app.use('/api/Land',LandRoute);
 app.use('/api/Admin',AdminRoute);
-app.use('/api/Front',FrontRoute)
+app.use('/api/Front',FrontRoute);
+app.use('/api/SmallSpace',SmallSpace);
+app.use('/api/OTP',OTP);
 
 app.get('/',(req,res)=>{
     res.send('Welcome to Warehousing');
