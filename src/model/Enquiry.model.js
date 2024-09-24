@@ -3,7 +3,8 @@ const validator= require('validator');
 const Warehouse=require('./warehouse.model');
 const ThreePLColdstorage=require('./3PL.Coldstorage.model');
 const ThreePLWarehouse=require('./3PL.Warehouse.model');
-const LandModel=require('./Land.model')
+const LandModel=require('./Land.model');
+const SmallSpace = require('./SmallSpace.model');
 const EnquirySchema = new mongoose.Schema(
     {
         UserID : {
@@ -49,7 +50,7 @@ const EnquirySchema = new mongoose.Schema(
         ListingModel: {
             type: String,
             required: true,
-            enum: ['ThreePLWarehouse', 'ThreePLColdstorage', 'Warehouse', 'LandModel'],
+            enum: ['ThreePLWarehouse', 'ThreePLColdstorage', 'Warehouse', 'LandModel','SmallSpace'],
             // select: false 
         }
     }
@@ -74,6 +75,9 @@ EnquirySchema.pre('save', async function(next) {
                 break;
             case 'LandModel':
                 modelExists = await LandModel.exists({ _id: ListingID });
+                break;
+            case 'SmallSpace':
+                modelExists = await SmallSpace.exists({ _id: ListingID });
                 break;
             default:
                 return next(new Error(`Invalid model: ${ListingModel}`));
