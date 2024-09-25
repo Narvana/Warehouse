@@ -12,83 +12,72 @@ const ApiResponse=require('../utils/ApiResponse/ApiResponse');
 const SignUp=async(req,res,next)=>{
     const {firstname,lastname,username,contactNo,email,password} = req.body;
 
-    if(!firstname || 
-        !lastname ||
-        !username || 
-        !email ||
-        !contactNo ||
-        !password ||
-        firstname.trim() ==='' || 
-        lastname.trim() ==='' ||
-        username.trim() ===''|| 
-        contactNo.trim() ===''|| 
-        email.trim() ==='' ||
-        password.trim() ==='')
-     {
-        return next(ApiErrors(400,`All Fields are required`))
+    if(!password || password.trim() ==='')
+    {
+    return next(ApiErrors(400,`Password is required`))
+    }
+    try  
+    {
+        const isValidPassword=validatePassword(password)
+
+        if(isValidPassword){
+            const hashedPassword=bcryptjs.hashSync(password,10);
+                const register=new Register({
+                    firstname,
+                    lastname,
+                    username,
+                    contactNo,
+                    email,
+                    password : hashedPassword,
+                    role : req.role
+            })
+    
+            const data=await register.save()
+            return next(ApiResponse(201,data,`${username} Registered Successfully`))
+        }
+        else{
+            return next(ApiErrors(400,`Enter a valid password. Atleast Min 8 Character, 1 Uppercase, 1 Lowercase, 1 Special Character, 1 Number `));
+        }
+    } catch (error) {
+        console.log({
+            'Internal Serve Error, ' : error.message,
+            error
+            });
+            
+        if(error.name === 'ValidationError')
+        {
+            const errorMessages = Object.values(error.errors).map(error => error.message);
+            return next(ApiErrors(500,errorMessages[0]));            
+        }
+        else if(error.code === 11000)
+        {
+            const cinMatch = error.errorResponse.errmsg.match(/"([^"]+)"/);
+            // console.log(cinMatch[1]);
+            if(error.errorResponse.errmsg.includes('contactNo'))
+            {
+                console.log(error);
+                return next(ApiErrors(500, `This Contact no is already taken -: ${cinMatch[1]}`));
+            }
+            else if(error.errorResponse.errmsg.includes('email'))
+            {
+                return next(ApiErrors(500, `This email is already taken -: ${cinMatch[1]}`));
+            }
+            else if(error.errorResponse.errmsg.includes('username'))
+            {
+                return next(ApiErrors(500, `This email is already taken -: ${cinMatch[1]}`));
+            }
+        }
+        else
+        {
+           
+            return next(ApiErrors(500,`Internal Server Error, Error -: ${error} `));
+        }
      }
-
-     let existingUsername;
-     let existingEmail;
-     let existingContact;
-
-     try {
-
-      existingUsername = await Register.findOne({username});
-      existingEmail = await Register.findOne({email});
-      existingContact = await Register.findOne({contactNo});
-       
-     if(existingEmail){
-      return next(ApiErrors(400,`${email} email already exist. Enter a new one.`))
-      }
-      else if(existingUsername){
-         return next(ApiErrors(400,`${username} username already exist. Enter a new one.`))
-      }
-      else if(existingContact){
-      return next(ApiErrors(400,`${contactNo} Contact Number already exist. Enter a new one.`))
-      }
-      else
-      {
-      const isValidPassword=validatePassword(password)
-
-      if(isValidPassword){
-          const hashedPassword=bcryptjs.hashSync(password,10);
-              const register=new Register({
-                  firstname,
-                  lastname,
-                  username,
-                  contactNo,
-                  email,
-                  password:hashedPassword,
-                  role: req.role
-          })
-  
-          const data=await register.save()
-          return next(ApiResponse(201,
-              data,
-              `${username} Registered Successfully`))
-      }
-      else{
-          return next(ApiErrors(400,`Enter a valid password. Atleast Min 8 Character, 1 Uppercase, 1 Lowercase, 1 Special Character, 1 Number `));
-      }
-   }
-     } catch (error) {
-         if(error.name === 'ValidationError')
-         {
-             const errorMessages = Object.values(error.errors).map(error => error.message);
-             return next(ApiErrors(500,errorMessages[0]));            
-         }
-        return next(ApiErrors(500,error))
-     }
-
 }
 
 const login=async(req,res,next)=>{
     const {email,password}=req.body;
 
-    if(!email || !password || email.trim()==="" || password.trim()===""){
-        return next(ApiErrors(400,`All Fields are required`))
-    }
     let existingEmail;
     try {
          existingEmail = await Register.findOne({email})
@@ -110,33 +99,24 @@ const login=async(req,res,next)=>{
  
                const refreshToken=await generateRefreshToken(existingEmail._id)
  
-               const loggedIn=await Register.findById(existingEmail._id).select("-password -refreshToken")
+               const loggedIn=await Register.findById(existingEmail._id).select("-password -refreshToken");
  
-               const options={
-                 httpOnly: true,
-                 secure:true
-               }
- 
-               return res
-               .cookie("accessToken",accessToken,options)
-               .cookie("refreshToken",refreshToken,options)
-               .json(
-                {
-                    user:loggedIn,
-                    accessToken,
-                    refreshToken
-                }
-                )
-                // {
-                //     "status":1,
-                //     "statuscode":200,
-                //     "data":[
-                //         {user},
-                //         {accessToken},
-                //         {refreshToken}
-                //     ],
-                //     "message":`${user.username} logged in successfully`
-                //  },
+            //    const options={
+            //      httpOnly: true,
+            //      secure:true
+            //    }
+
+            //    return res
+            //    .cookie("accessToken",accessToken,options)
+            //    .cookie("refreshToken",refreshToken,options)
+            //    .json(
+            //     {
+            //         user:loggedIn,
+            //         accessToken,
+            //         refreshToken
+            //     }
+            //     )
+            return next(ApiResponse(200,{user:loggedIn,accessToken,refreshToken},`${req.role} Logged In Successfully`))
             }
         }
        }
@@ -168,7 +148,8 @@ const profile=async(req,res,next)=>{
         {
             return next(ApiErrors(401,"Unauthenticaed User. You cannot view this profile"));
         }
-        return next(ApiResponse(201,checkUser,`Warehouse Lister ${checkUser.username} Profile`));        
+      
+        return next(ApiResponse(201,checkUser,`${req.user.role} ${checkUser.username} Profile`));        
     } catch (error) {
         console.log(`Internal Server Error: ${error}`);
         return next(ApiErrors(500,`Internal Server Error: ${error.message}`));
@@ -184,9 +165,8 @@ const update=async(req,res,next)=>{
     
     if(req.user.id != checkUser._id)
     {
-        return next(ApiErrors(401,"Unauthenticaed User. You cannot Update this profile"));
+        return next(ApiErrors(401,"Unauthenticaed User. You cannot Update this profile")); 
     }
-
 
     try {
         const { firstname, lastname, username, contactNo, email} = req.body;
@@ -204,9 +184,9 @@ const update=async(req,res,next)=>{
                 {
                     firstname: firstname,
                     lastname: lastname,
-                    username: username, // || req.user.username,
-                    contactNo: contactNo, // || req.user.contactNo,
-                    email: email, //|| req.user.email,
+                    username: username,
+                    contactNo: contactNo,
+                    email: email,
                 }
             },
             {
@@ -216,11 +196,43 @@ const update=async(req,res,next)=>{
        );
 
         const {password, refreshToken, ...rest} = userUpdate._doc;
-        return next(ApiResponse(201,rest,"Updated Successfully"));
+
+        return next(ApiResponse(201,rest,`${req.user.role} Profile Updated Successfully`));               
 
     } catch (error) {
-        console.log(`Internal Server Error: ${error}`);
-        return next(ApiErrors(500,`Internal Server Error: ${error.message}`)); 
+        console.log({
+            'Internal Serve Error, ' : error.message,
+            error
+            });
+            
+        if(error.name === 'ValidationError')
+        {
+            const errorMessages = Object.values(error.errors).map(error => error.message);
+            return next(ApiErrors(500,errorMessages[0]));            
+        }
+        else if(error.code === 11000)
+        {
+            const cinMatch = error.errorResponse.errmsg.match(/"([^"]+)"/);
+            // console.log(cinMatch[1]);
+            if(error.errorResponse.errmsg.includes('contactNo'))
+            {
+                console.log(error);
+                return next(ApiErrors(500, `This Contact no is already taken -: ${cinMatch[1]}`));
+            }
+            else if(error.errorResponse.errmsg.includes('email'))
+            {
+                return next(ApiErrors(500, `This email is already taken -: ${cinMatch[1]}`));
+            }
+            else if(error.errorResponse.errmsg.includes('username'))
+            {
+                return next(ApiErrors(500, `This email is already taken -: ${cinMatch[1]}`));
+            }
+        }
+        else
+        {
+           
+            return next(ApiErrors(500,`Internal Server Error, Error -: ${error} `));
+        }
     }
 }
 
@@ -237,14 +249,18 @@ const UpdatePassword=async(req,res,next)=>{
     
     const { CurrentPassword, NewPassword } = req.body;
     
-    if (!CurrentPassword || !NewPassword || !CurrentPassword.trim() || !NewPassword.trim()) {
-        return next(ApiErrors(400, "All fields are required"));
+    if (!CurrentPassword ||  !CurrentPassword.trim() ) {
+        return next(ApiErrors(400, "Current Password Feild is required"));
+    }else if(!NewPassword || !NewPassword.trim())
+    {
+        return next(ApiErrors(400, "New Password Field is required"));
     }
     
-    try {
+    try 
+    {
         const isPasswordCorrect = bcryptjs.compareSync(CurrentPassword, checkUser.password);
         if (!isPasswordCorrect) {
-            return next(ApiErrors(400, "Your current password does not match the one in the database. Enter the correct password"));
+            return next(ApiErrors(400, "Your current password does not match. Enter the correct password"));
         }
         const isValidNewPassword = validatePassword(NewPassword);
         if (!isValidNewPassword) {
@@ -262,7 +278,7 @@ const UpdatePassword=async(req,res,next)=>{
         );
     
         if (update) {
-            return next(ApiResponse(200,"", "Password updated successfully"));
+            return next(ApiResponse(201,"",`${req.user.role} Password Updated Successfully`));  
         } else {
             return next(ApiErrors(400, "No user found with this ID"));
         }
