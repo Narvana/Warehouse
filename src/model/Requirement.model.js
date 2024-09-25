@@ -10,7 +10,7 @@ const RequirementSchema = new mongoose.Schema({
             {
                 return value && value.length > 0
             },
-            message:'Select Atleast 1 Looking For feild'
+            message:'Select Atleast 1 field'
         }
     },
      name:{
