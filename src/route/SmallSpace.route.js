@@ -1,24 +1,24 @@
 const express = require('express');
+const router = express.Router();
+const { verify } = require('../middleware/token/verifyToken');
+const upload = require('../middleware/ImageUpload/imageUploadMiddleware');
+const SmallSpaceController = require('../controller/SmallSpace.contoller');
 
-const router=express.Router();
+// Small Space
 
-const verifyToken=require('../middleware/token/verifyToken');
+// Add 3PL Coldstorage
+router.post('/add/listing', verify(['LISTER,ADMIN']), upload.fields([{ name: "SmallSpaceImage", maxCount: 5 }]), SmallSpaceController.AddSmallSpace);
 
-const {verifyRoles}=require('../middleware/role/verifyRole');
+// GET LISTER ALL 3PL Coldstorage
+router.get('/get/All/Listing', verify(['LISTER','ADMIN']), SmallSpaceController.getListerAllSmallSpace);
 
-const upload=require('../middleware/ImageUpload/imageUploadMiddleware')
+// GET Single 3PL ColdStorage With provided ID
+router.get('/get/Single/Listing', SmallSpaceController.singleSmallSpace);
 
-const SmallSpaceController=require('../controller/SmallSpace.contoller');
+// UPDATE 3PL ColdStorage Provide ID
+router.put('/update/Listing', verify(['LISTER','ADMIN']), upload.fields([{ name: "SmallSpaceImage", maxCount: 5 }]), SmallSpaceController.updateSmallSpace);
 
-// Warehouse
-router.post('/add/listing',verifyToken.verify,verifyRoles(['LISTER', 'ADMIN']),upload.fields([{name:"SmallSpaceImage", maxCount:5}]),SmallSpaceController.AddSmallSpace);
+// DELETE 3PL ColdStorage Provide ID
+router.delete('/delete/Listing', verify(['ADMIN','LISTER']), SmallSpaceController.DeleteSmallSpace);
 
-router.get('/get/All/Listing',verifyToken.verify,SmallSpaceController.getListerAllSmallSpace);
-
-router.get('/get/Single/Listing',SmallSpaceController.singleSmallSpace);
-
-router.put('/update/Listing',verifyToken.verify,upload.fields([{name:"SmallSpaceImage", maxCount:5}]),SmallSpaceController.updateSmallSpace);
-
-router.delete('/delete/Listing',verifyToken.verify,SmallSpaceController.DeleteSmallSpace);
-
-module.exports=router
+module.exports = router;
