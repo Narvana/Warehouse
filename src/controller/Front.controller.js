@@ -8,6 +8,8 @@ const mongoose = require('mongoose');
 const ApiErrors=require('../utils/ApiResponse/ApiErrors');
 const ApiResponses=require('../utils/ApiResponse/ApiResponse');
 const Requirement = require('../model/Requirement.model');
+const LandModel = require('../model/Land.model');
+const SmallSpace = require('../model/SmallSpace.model');
 
 const AllListing=async(req,res,next)=>{
     try {
@@ -44,7 +46,6 @@ const AllListing=async(req,res,next)=>{
                           }, 
                     }
                   ] // Empty pipeline to return all documents
-                  
                 }
               },
               {
@@ -86,14 +87,34 @@ const AllListing=async(req,res,next)=>{
                     }
                   ]
                 }
-              }
+              },
+              {
+                $unionWith: {
+                  coll: 'smallspaces', // Correct collection name
+                  pipeline: [
+                    {
+                        $project: {
+                            name: '$basicInfo.name',
+                            city: '$basicInfo.city',
+                            locality : '$basicInfo.locality',
+                            price: '$SmallSpaceDetails.expectedRent',
+                            description: '$SmallSpaceDescription',
+                            image: { $arrayElemAt: ['$SmallSpaceImage', 0] },
+                            type: '$type',
+                            isVerified : '$isVerified',
+                            isFeatured : '$isFeatured',
+                            WTRA: { $ifNull: ['$WTRA', null] }
+                        },
+                    }
+                  ]
+                }
+            }
         ])
 
-         if (All.length===0) {
+        if (All.length===0) {
             return next(ApiErrors(400, `No Warehouse found`));
         }
-        return next(ApiResponses(200,All,'List of All Warehouse & 3PLWarehouse and 3PLColdStorage'))
-
+        return next(ApiResponses(200,All,'List of All Warehouse & 3PLWarehouse and 3PLColdStorage'));
     } catch (error) {
         console.error('Internal Server Error:', error);
         return next(ApiErrors(500,`Internal Serve Error, Error -: ${error.message} `)); 
@@ -196,15 +217,43 @@ const AllFeatured=async(req,res,next)=>{
                     }
                   ]
                 }
-              }
+            },
+            {
+                $unionWith: {
+                  coll: 'smallspaces', // Correct collection name
+                  pipeline: [
+                    {
+                        $match:{
+                            'isFeatured':true,
+                        },
+                    },
+                    {
+                        $project: {
+                            name: '$basicInfo.name',
+                            city: '$basicInfo.city',
+                            locality : '$basicInfo.locality',
+                            price: '$SmallSpaceDetails.expectedRent',
+                            description: '$SmallSpaceDescription',
+                            image: { $arrayElemAt: ['$SmallSpaceImage', 0] },
+                            type: '$type',
+                            isVerified : '$isVerified',
+                            isFeatured : '$isFeatured',
+                            WTRA: { $ifNull: ['$WTRA', null] }
+                        }, 
+                    }
+                  ]
+                }
+            }
         ])
         if(AllFeatured.length === 0)
         {
             return next(ApiErrors(404,` No Featured Data found `)); 
         }
-        return next(ApiResponses(200,AllFeatured,'All Fearured Warehouse, 3PL Warehouse and 3PL Cold Storage'))       
+        return next(ApiResponses(200,AllFeatured,'All Fearured Listing'));       
     } catch (error) {
+
         console.error('Internal Server Error:', error);
+
         return next(ApiErrors(500,`Internal Serve Error, Error -: ${error.message} `));    
     }
 }
@@ -214,11 +263,11 @@ const recentWarehouse=async(req,res,next)=>{
     try {
 
         const AllRecent = await Warehouse.aggregate([
-            {
-                $match: {
-                    isVerified: true
-                }
-            },
+            // {
+            //     $match: {
+            //         isVerified: true
+            //     }
+            // },
             {
                 $sort: {
                     createdAt: -1
@@ -244,11 +293,11 @@ const recentWarehouse=async(req,res,next)=>{
                 $unionWith: {
                     coll: 'threeplwarehouses',
                     pipeline: [
-                        {
-                            $match: {
-                                isVerified: true
-                            }
-                        },
+                        // {
+                        //     $match: {
+                        //         isVerified: true
+                        //     }
+                        // },
                         {
                             $sort: {
                                 createdAt: -1
@@ -278,11 +327,11 @@ const recentWarehouse=async(req,res,next)=>{
                 $unionWith: {
                     coll: 'threeplcoldstorages',
                     pipeline: [
-                        {
-                            $match: {
-                                isVerified: true
-                            }
-                        },
+                        // {
+                        //     $match: {
+                        //         isVerified: true
+                        //     }
+                        // },
                         {
                             $sort: {
                                 createdAt: -1
@@ -311,11 +360,11 @@ const recentWarehouse=async(req,res,next)=>{
                 $unionWith: {
                   coll: 'landmodels', // Correct collection name
                   pipeline: [
-                    {
-                        $match: {
-                            isVerified: true
-                        }
-                    },
+                    // {
+                    //     $match: {
+                    //         isVerified: true
+                    //     }
+                    // },
                     {
                         $sort: {
                             createdAt: -1
@@ -339,8 +388,36 @@ const recentWarehouse=async(req,res,next)=>{
                     }
                   ]
                 }
-              }
-            
+            },
+            {
+                $unionWith: {
+                  coll: 'smallspaces', // Correct collection name
+                  pipeline: [
+                    {
+                        $sort: {
+                            createdAt: -1
+                        }
+                    },
+                    {
+                        $limit: 3
+                    },
+                    {
+                        $project: {
+                            name: '$basicInfo.name',
+                            city: '$basicInfo.city',
+                            locality : '$basicInfo.locality',
+                            price: '$SmallSpaceDetails.expectedRent',
+                            description: '$SmallSpaceDescription',
+                            image: { $arrayElemAt: ['$SmallSpaceImage', 0] },
+                            type: '$type',
+                            isVerified : '$isVerified',
+                            isFeatured : '$isFeatured',
+                            WTRA: { $ifNull: ['$WTRA', null] }
+                        }, 
+                    }
+                  ]
+                }
+            }            
         ]);
         
         // console.log(allData);
@@ -355,7 +432,6 @@ const recentWarehouse=async(req,res,next)=>{
         return next(ApiErrors(500,`Internal Serve Error, Error -: ${error.message} `)); 
     }
 }
-
 
 // Search API
 const searchWareHouseAll=async(req,res,next)=>
@@ -385,7 +461,7 @@ const searchWareHouseAll=async(req,res,next)=>
         threePLWarehouseMatchConditions['warehouse_details.warehouseAddress.area'] = locality;
         threePLColdstorageMatchConditions['cold_storage_details.ColdStorageAddress.area'] = locality;
         landConditions['basicInfo.locality'] = locality;
-        smallspace['basicInfo.locality'] = city;
+        smallspace['basicInfo.locality'] = locality;
     }
     
     if (price) {
@@ -459,7 +535,7 @@ const searchWareHouseAll=async(req,res,next)=>
                             $project: {
                                 name: '$company_details.company_name',
                                 city: '$warehouse_details.warehouseAddress.city',
-                                locality : '$warehouse_details.warehouseAddress.area',
+                                locality: '$warehouse_details.warehouseAddress.area',
                                 price: '$warehouse_details.otherDetails.DepositRent',
                                 description: '$warehouse_details.otherDetails.DescribeFacility',
                                 image: { $arrayElemAt: ['$warehouse_details.WarehouseImage', 0] },
@@ -552,6 +628,7 @@ const searchWareHouseAll=async(req,res,next)=>
         delete threePLWarehouseMatchConditions['warehouse_details.warehouseAddress.area'];
         delete threePLColdstorageMatchConditions['cold_storage_details.ColdStorageAddress.area'];
         delete landConditions['basicInfo.locality'];
+        delete smallspace['basicInfo.locality'];
 
         Result = await Warehouse.aggregate([
             {
@@ -648,16 +725,16 @@ const searchWareHouseAll=async(req,res,next)=>
                   coll: 'smallspaces', // Correct collection name
                   pipeline: [
                     {
-                        $match: landConditions
+                        $match: smallspace
                     },
                     {
                         $project: {
                             name: '$basicInfo.name',
                             city: '$basicInfo.city',
                             locality : '$basicInfo.locality',
-                            price: '$AdditionalDetails.SalePrice',
-                            description: '$AdditionalDetails.SpecialRemark',
-                            image: { $arrayElemAt: ['$LandImage', 0] },
+                            price: '$SmallSpaceDetails.expectedRent',
+                            description: '$SmallSpaceDescription',
+                            image: { $arrayElemAt: ['$SmallSpaceImage', 0] },
                             type: '$type',
                             isVerified : '$isVerified',
                             isFeatured : '$isFeatured',
@@ -690,11 +767,33 @@ const SendEnquiry = async(req,res,next)=>{
         {
             return next(ApiErrors(404,'No User Found with The ID Provided'));
         }
-        const {ListingID,ListingModel} = req.body;
+        const { ListingID , ListingModel } = req.body;
         if(!ListingID || !ListingID.trim() || !ListingModel || !ListingModel.trim())
         {
-            return next(ApiErrors(400,'Please Provide Both the feild Listing ID and Listing Model to send Enquiry')); 
+            return next(ApiErrors(400,'Please Provide Both the field Listing ID and Listing Model to send Enquiry')); 
         }
+        const models = [Warehouse, ThreePLWarehouse, ThreePLColdstorage,LandModel,SmallSpace];
+
+        let found=null;
+
+        for (const model of models) {
+             found = await model.findOne({_id: ListingID});
+            if (found) {
+                break;
+            }
+        }       
+
+        if(!found)
+        {
+            return next(ApiErrors(400,'No Listing found with the provided Listing ID')); 
+        }
+
+
+        if(found.Lister == UserID)
+        {            
+            return next(ApiErrors(400,'You Can Not enquire for your own Listing')); 
+        }
+
         const EnquiryExist = await Enquiry.findOne({
             UserID,
             ListingID
@@ -709,6 +808,7 @@ const SendEnquiry = async(req,res,next)=>{
             ListingID,
             ListingModel
         })
+
         const final = await enquiry.save();
         return next(ApiResponses(200,final,`Enquiry succesfully send by ${req.user.username}`)); 
     } catch (error) {
@@ -740,8 +840,7 @@ const SendRequirement=async(req,res,next)=>{
                 return next(ApiErrors(500,errorMessages[0]));            
             }
         return next(ApiErrors(500, `Error while saving requirement: ${error.message}`));
-    }
-    
+    }  
 }
 
 module.exports={
