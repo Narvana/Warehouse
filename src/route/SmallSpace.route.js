@@ -7,7 +7,7 @@ const SmallSpaceController = require('../controller/SmallSpace.contoller');
 // Small Space
 
 // Add Small Space
-router.post('/add/listing', verify(['LISTER,ADMIN']), upload.fields([{ name: "SmallSpaceImage", maxCount: 5 }]), SmallSpaceController.AddSmallSpace);
+router.post('/add/listing', verify(['LISTER','ADMIN']), upload.fields([{ name: "SmallSpaceImage", maxCount: 5 }]), SmallSpaceController.AddSmallSpace);
 
 // GET LISTER ALL Small Space
 router.get('/get/All/Listing', verify(['LISTER','ADMIN']), SmallSpaceController.getListerAllSmallSpace);
