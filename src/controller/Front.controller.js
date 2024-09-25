@@ -16,8 +16,11 @@ const AllListing=async(req,res,next)=>{
         const All=await Warehouse.aggregate([
             {
                 $project:{
-                    name: '$basicInfo.name',
+                    name : '$basicInfo.name',
+                    contact : '$basicInfo.contactNo',
+                    email : '$basicInfo.email',
                     city: '$basicInfo.city',
+                    locality: '$basicInfo.locality',
                     price: '$floorRent.expectedRent',
                     description: '$wareHouseDescription',
                     image: { $arrayElemAt: ['$wareHouseImage', 0] }, 
@@ -34,8 +37,10 @@ const AllListing=async(req,res,next)=>{
                     {
                         $project: {
                             name: '$company_details.company_name',
+                            contact : '$company_details.mobileNo',
+                            email : '$company_details.email',
                             city: '$warehouse_details.warehouseAddress.city',
-                            // state: 
+                            locality : '$warehouse_details.warehouseAddress.area',
                             price: '$warehouse_details.otherDetails.DepositRent',
                             description: '$warehouse_details.otherDetails.DescribeFacility',
                             image: { $arrayElemAt: ['$warehouse_details.WarehouseImage', 0] }, 
@@ -55,7 +60,10 @@ const AllListing=async(req,res,next)=>{
                     {
                         $project: {
                             name: '$company_details.company_name',
+                            contact : '$company_details.mobileNo',
+                            email : '$company_details.email',
                             city: '$cold_storage_details.ColdStorageAddress.city',
+                            locality: '$cold_storage_details.ColdStorageAddress.area',
                             price: '$cold_storage_details.AdditionDetails.DepositRent',
                             description: '$cold_storage_details.AdditionDetails.DescribeFacility',
                             image: { $arrayElemAt: ['$cold_storage_details.ColdStorageImage', 0] },
@@ -75,7 +83,10 @@ const AllListing=async(req,res,next)=>{
                     {
                         $project: {
                             name: '$basicInfo.name',
+                            contact: '$basicInfo.contactNo',
                             city: '$basicInfo.city',
+                            locality : `$basicInfo.locality`,
+                            email : '$basicInfo.email',
                             price: '$AdditionalDetails.SalePrice',
                             description: '$AdditionalDetails.SpecialRemark',
                             image: { $arrayElemAt: ['$LandImage', 0] },
@@ -95,6 +106,8 @@ const AllListing=async(req,res,next)=>{
                     {
                         $project: {
                             name: '$basicInfo.name',
+                            contact: '$basicInfo.contactNo',
+                            email : '$basicInfo.email',
                             city: '$basicInfo.city',
                             locality : '$basicInfo.locality',
                             price: '$SmallSpaceDetails.expectedRent',
@@ -114,7 +127,8 @@ const AllListing=async(req,res,next)=>{
         if (All.length===0) {
             return next(ApiErrors(400, `No Warehouse found`));
         }
-        return next(ApiResponses(200,All,'List of All Warehouse & 3PLWarehouse and 3PLColdStorage'));
+        console.log('Total Listings', All.length);        
+        return next(ApiResponses(200,All,'List of All Listing'));
     } catch (error) {
         console.error('Internal Server Error:', error);
         return next(ApiErrors(500,`Internal Serve Error, Error -: ${error.message} `)); 
@@ -132,15 +146,18 @@ const AllFeatured=async(req,res,next)=>{
             {
                 $project: 
                 {
-                  name: '$basicInfo.name',
-                  city: '$basicInfo.city',
-                  price: '$floorRent.expectedRent',
-                  description: '$wareHouseDescription',
-                  image: { $arrayElemAt: ['$wareHouseImage', 0] }, 
-                  type: '$type',
-                  isVerified : '$isVerified',
-                  isFeatured : '$isFeatured',
-                  WTRA: '$WTRA'
+                    name : '$basicInfo.name',
+                    contact : '$basicInfo.contactNo',
+                    email : '$basicInfo.email',
+                    city: '$basicInfo.city',
+                    locality: '$basicInfo.locality',
+                    price: '$floorRent.expectedRent',
+                    description: '$wareHouseDescription',
+                    image: { $arrayElemAt: ['$wareHouseImage', 0] }, 
+                    type: '$type',
+                    isVerified : '$isVerified',
+                    isFeatured : '$isFeatured',
+                    WTRA: '$WTRA'
                 },
             },
             {
@@ -155,7 +172,10 @@ const AllFeatured=async(req,res,next)=>{
                         {
                             $project: {
                                 name: '$company_details.company_name',
+                                contact : '$company_details.mobileNo',
+                                email : '$company_details.email',
                                 city: '$warehouse_details.warehouseAddress.city',
+                                locality : '$warehouse_details.warehouseAddress.area',
                                 price: '$warehouse_details.otherDetails.DepositRent',
                                 description: '$warehouse_details.otherDetails.DescribeFacility',
                                 image: { $arrayElemAt: ['$warehouse_details.WarehouseImage', 0] }, 
@@ -179,15 +199,18 @@ const AllFeatured=async(req,res,next)=>{
                         },
                         {
                             $project: {
-                                name: '$company_details.company_name',
-                                city: '$cold_storage_details.ColdStorageAddress.city',
-                                price: '$cold_storage_details.AdditionDetails.DepositRent',
-                                description: '$cold_storage_details.AdditionDetails.DescribeFacility',
-                                image: { $arrayElemAt: ['$cold_storage_details.ColdStorageImage', 0] },
-                                type: '$type',
-                                isVerified : '$isVerified',
-                                isFeatured : '$isFeatured',
-                                WTRA: { $ifNull: ['$WTRA', null] }
+                            name: '$company_details.company_name',
+                            contact : '$company_details.mobileNo',
+                            email : '$company_details.email',
+                            city: '$cold_storage_details.ColdStorageAddress.city',
+                            locality: '$cold_storage_details.ColdStorageAddress.area',
+                            price: '$cold_storage_details.AdditionDetails.DepositRent',
+                            description: '$cold_storage_details.AdditionDetails.DescribeFacility',
+                            image: { $arrayElemAt: ['$cold_storage_details.ColdStorageImage', 0] },
+                            type: '$type',
+                            isVerified : '$isVerified',
+                            isFeatured : '$isFeatured',
+                            WTRA: { $ifNull: ['$WTRA', null] }
                               }, 
                         }
                     ]
@@ -204,8 +227,11 @@ const AllFeatured=async(req,res,next)=>{
                     },
                     {
                         $project: {
-                            name: '$basicInfo.name',
+                           name: '$basicInfo.name',
+                            contact: '$basicInfo.contactNo',
                             city: '$basicInfo.city',
+                            locality : `$basicInfo.locality`,
+                            email : '$basicInfo.email',
                             price: '$AdditionalDetails.SalePrice',
                             description: '$AdditionalDetails.SpecialRemark',
                             image: { $arrayElemAt: ['$LandImage', 0] },
@@ -230,6 +256,8 @@ const AllFeatured=async(req,res,next)=>{
                     {
                         $project: {
                             name: '$basicInfo.name',
+                            contact: '$basicInfo.contactNo',
+                            email : '$basicInfo.email',
                             city: '$basicInfo.city',
                             locality : '$basicInfo.locality',
                             price: '$SmallSpaceDetails.expectedRent',
@@ -278,8 +306,11 @@ const recentWarehouse=async(req,res,next)=>{
             },
             {
                 $project: {
-                    name: '$basicInfo.name',
+                    name : '$basicInfo.name',
+                    contact : '$basicInfo.contactNo',
+                    email : '$basicInfo.email',
                     city: '$basicInfo.city',
+                    locality: '$basicInfo.locality',
                     price: '$floorRent.expectedRent',
                     description: '$wareHouseDescription',
                     image: { $arrayElemAt: ['$wareHouseImage', 0] }, 
@@ -310,14 +341,17 @@ const recentWarehouse=async(req,res,next)=>{
                             $project: 
                             {
                                 name: '$company_details.company_name',
-                                city: '$warehouse_details.warehouseAddress.city',
-                                price: '$warehouse_details.otherDetails.DepositRent',
-                                description: '$warehouse_details.otherDetails.DescribeFacility',
-                                image: { $arrayElemAt: ['$warehouse_details.WarehouseImage', 0] },
-                                type: '$type',
-                                isVerified : '$isVerified',
-                                isFeatured : '$isFeatured',
-                                WTRA: '$WTRA'
+                            contact : '$company_details.mobileNo',
+                            email : '$company_details.email',
+                            city: '$warehouse_details.warehouseAddress.city',
+                            locality : '$warehouse_details.warehouseAddress.area',
+                            price: '$warehouse_details.otherDetails.DepositRent',
+                            description: '$warehouse_details.otherDetails.DescribeFacility',
+                            image: { $arrayElemAt: ['$warehouse_details.WarehouseImage', 0] }, 
+                            type: '$type',
+                            isVerified : '$isVerified',
+                            isFeatured : '$isFeatured',
+                            WTRA: '$WTRA'
                             }
                         }
                     ]
@@ -376,7 +410,10 @@ const recentWarehouse=async(req,res,next)=>{
                     {
                         $project: {
                             name: '$basicInfo.name',
+                            contact: '$basicInfo.contactNo',
                             city: '$basicInfo.city',
+                            locality : `$basicInfo.locality`,
+                            email : '$basicInfo.email',
                             price: '$AdditionalDetails.SalePrice',
                             description: '$AdditionalDetails.SpecialRemark',
                             image: { $arrayElemAt: ['$LandImage', 0] },
@@ -403,7 +440,9 @@ const recentWarehouse=async(req,res,next)=>{
                     },
                     {
                         $project: {
-                            name: '$basicInfo.name',
+                          name: '$basicInfo.name',
+                            contact: '$basicInfo.contactNo',
+                            email : '$basicInfo.email',
                             city: '$basicInfo.city',
                             locality : '$basicInfo.locality',
                             price: '$SmallSpaceDetails.expectedRent',
@@ -512,12 +551,14 @@ const searchWareHouseAll=async(req,res,next)=>
             },
             {
                 $project: {
-                    name: '$basicInfo.name',
+                    name : '$basicInfo.name',
+                    contact : '$basicInfo.contactNo',
+                    email : '$basicInfo.email',
                     city: '$basicInfo.city',
-                    locality : '$basicInfo.locality',
+                    locality: '$basicInfo.locality',
                     price: '$floorRent.expectedRent',
                     description: '$wareHouseDescription',
-                    image: { $arrayElemAt: ['$wareHouseImage', 0] },
+                    image: { $arrayElemAt: ['$wareHouseImage', 0] }, 
                     type: '$type',
                     isVerified : '$isVerified',
                     isFeatured : '$isFeatured',
@@ -534,15 +575,17 @@ const searchWareHouseAll=async(req,res,next)=>
                         {
                             $project: {
                                 name: '$company_details.company_name',
-                                city: '$warehouse_details.warehouseAddress.city',
-                                locality: '$warehouse_details.warehouseAddress.area',
-                                price: '$warehouse_details.otherDetails.DepositRent',
-                                description: '$warehouse_details.otherDetails.DescribeFacility',
-                                image: { $arrayElemAt: ['$warehouse_details.WarehouseImage', 0] },
-                                type: '$type',
-                                isVerified : '$isVerified',
-                                isFeatured : '$isFeatured',
-                                WTRA: '$WTRA'
+                            contact : '$company_details.mobileNo',
+                            email : '$company_details.email',
+                            city: '$warehouse_details.warehouseAddress.city',
+                            locality : '$warehouse_details.warehouseAddress.area',
+                            price: '$warehouse_details.otherDetails.DepositRent',
+                            description: '$warehouse_details.otherDetails.DescribeFacility',
+                            image: { $arrayElemAt: ['$warehouse_details.WarehouseImage', 0] }, 
+                            type: '$type',
+                            isVerified : '$isVerified',
+                            isFeatured : '$isFeatured',
+                            WTRA: '$WTRA'
                             }
                         }
                     ]
@@ -558,8 +601,10 @@ const searchWareHouseAll=async(req,res,next)=>
                         {
                             $project: {
                                 name: '$company_details.company_name',
+                                contact : '$company_details.mobileNo',
+                                email : '$company_details.email',
                                 city: '$cold_storage_details.ColdStorageAddress.city',
-                                locality : '$cold_storage_details.ColdStorageAddress.area',
+                                locality: '$cold_storage_details.ColdStorageAddress.area',
                                 price: '$cold_storage_details.AdditionDetails.DepositRent',
                                 description: '$cold_storage_details.AdditionDetails.DescribeFacility',
                                 image: { $arrayElemAt: ['$cold_storage_details.ColdStorageImage', 0] },
@@ -582,8 +627,10 @@ const searchWareHouseAll=async(req,res,next)=>
                     {
                         $project: {
                             name: '$basicInfo.name',
+                            contact: '$basicInfo.contactNo',
                             city: '$basicInfo.city',
-                            locality : '$basicInfo.locality',
+                            locality : `$basicInfo.locality`,
+                            email : '$basicInfo.email',
                             price: '$AdditionalDetails.SalePrice',
                             description: '$AdditionalDetails.SpecialRemark',
                             image: { $arrayElemAt: ['$LandImage', 0] },
@@ -605,7 +652,9 @@ const searchWareHouseAll=async(req,res,next)=>
                     },
                     {
                         $project: {
-                            name: '$basicInfo.name',
+                           name: '$basicInfo.name',
+                            contact: '$basicInfo.contactNo',
+                            email : '$basicInfo.email',
                             city: '$basicInfo.city',
                             locality : '$basicInfo.locality',
                             price: '$SmallSpaceDetails.expectedRent',
@@ -636,12 +685,14 @@ const searchWareHouseAll=async(req,res,next)=>
             },
             {
                 $project: {
-                    name: '$basicInfo.name',
+                    name : '$basicInfo.name',
+                    contact : '$basicInfo.contactNo',
+                    email : '$basicInfo.email',
                     city: '$basicInfo.city',
-                    locality : '$basicInfo.locality',
+                    locality: '$basicInfo.locality',
                     price: '$floorRent.expectedRent',
                     description: '$wareHouseDescription',
-                    image: { $arrayElemAt: ['$wareHouseImage', 0] },
+                    image: { $arrayElemAt: ['$wareHouseImage', 0] }, 
                     type: '$type',
                     isVerified : '$isVerified',
                     isFeatured : '$isFeatured',
@@ -658,11 +709,13 @@ const searchWareHouseAll=async(req,res,next)=>
                         {
                             $project: {
                                 name: '$company_details.company_name',
+                                contact : '$company_details.mobileNo',
+                                email : '$company_details.email',
                                 city: '$warehouse_details.warehouseAddress.city',
                                 locality : '$warehouse_details.warehouseAddress.area',
                                 price: '$warehouse_details.otherDetails.DepositRent',
                                 description: '$warehouse_details.otherDetails.DescribeFacility',
-                                image: { $arrayElemAt: ['$warehouse_details.WarehouseImage', 0] },
+                                image: { $arrayElemAt: ['$warehouse_details.WarehouseImage', 0] }, 
                                 type: '$type',
                                 isVerified : '$isVerified',
                                 isFeatured : '$isFeatured',
@@ -682,15 +735,17 @@ const searchWareHouseAll=async(req,res,next)=>
                         {
                             $project: {
                                 name: '$company_details.company_name',
-                                city: '$cold_storage_details.ColdStorageAddress.city',
-                                locality : '$cold_storage_details.ColdStorageAddress.area',
-                                price: '$cold_storage_details.AdditionDetails.DepositRent',
-                                description: '$cold_storage_details.AdditionDetails.DescribeFacility',
-                                image: { $arrayElemAt: ['$cold_storage_details.ColdStorageImage', 0] },
-                                type: '$type',
-                                isVerified : '$isVerified',
-                                isFeatured : '$isFeatured',
-                                WTRA: { $ifNull: ['$WTRA', null] }
+                            contact : '$company_details.mobileNo',
+                            email : '$company_details.email',
+                            city: '$cold_storage_details.ColdStorageAddress.city',
+                            locality: '$cold_storage_details.ColdStorageAddress.area',
+                            price: '$cold_storage_details.AdditionDetails.DepositRent',
+                            description: '$cold_storage_details.AdditionDetails.DescribeFacility',
+                            image: { $arrayElemAt: ['$cold_storage_details.ColdStorageImage', 0] },
+                            type: '$type',
+                            isVerified : '$isVerified',
+                            isFeatured : '$isFeatured',
+                            WTRA: { $ifNull: ['$WTRA', null] }
                             }
                         }
                     ]
@@ -706,8 +761,10 @@ const searchWareHouseAll=async(req,res,next)=>
                     {
                         $project: {
                             name: '$basicInfo.name',
+                            contact: '$basicInfo.contactNo',
                             city: '$basicInfo.city',
-                            locality : '$basicInfo.locality',
+                            locality : `$basicInfo.locality`,
+                            email : '$basicInfo.email',
                             price: '$AdditionalDetails.SalePrice',
                             description: '$AdditionalDetails.SpecialRemark',
                             image: { $arrayElemAt: ['$LandImage', 0] },
@@ -729,7 +786,9 @@ const searchWareHouseAll=async(req,res,next)=>
                     },
                     {
                         $project: {
-                            name: '$basicInfo.name',
+                          name: '$basicInfo.name',
+                            contact: '$basicInfo.contactNo',
+                            email : '$basicInfo.email',
                             city: '$basicInfo.city',
                             locality : '$basicInfo.locality',
                             price: '$SmallSpaceDetails.expectedRent',
