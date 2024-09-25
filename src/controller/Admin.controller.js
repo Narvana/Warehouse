@@ -134,6 +134,7 @@ const allListing=async(req,res,next)=>{
                     contact : '$basicInfo.contactNo',
                     email : '$basicInfo.email',
                     city: '$basicInfo.city',
+                    locality: '$basicInfo.locality',
                     price: '$floorRent.expectedRent',
                     description: '$wareHouseDescription',
                     // image: { $arrayElemAt: ['$wareHouseImage', 0] }, 
@@ -153,6 +154,7 @@ const allListing=async(req,res,next)=>{
                             contact : '$company_details.mobileNo',
                             email : '$company_details.email',
                             city: '$warehouse_details.warehouseAddress.city',
+                            locality : '$warehouse_details.warehouseAddress.area',
                             price: '$warehouse_details.otherDetails.DepositRent',
                             description: '$warehouse_details.otherDetails.DescribeFacility',
                             // image: { $arrayElemAt: ['$warehouse_details.WarehouseImage', 0] }, 
@@ -176,6 +178,7 @@ const allListing=async(req,res,next)=>{
                             contact : '$company_details.mobileNo',
                             email : '$company_details.email',
                             city: '$cold_storage_details.ColdStorageAddress.city',
+                            locality: '$cold_storage_details.ColdStorageAddress.area',
                             price: '$cold_storage_details.AdditionDetails.DepositRent',
                             description: '$cold_storage_details.AdditionDetails.DescribeFacility',
                             // image: { $arrayElemAt: ['$cold_storage_details.ColdStorageImage', 0] },
@@ -195,9 +198,10 @@ const allListing=async(req,res,next)=>{
                     {
                         $project: {
                             name: '$basicInfo.name',
+                            contact: '$basicInfo.contactNo',
                             city: '$basicInfo.city',
+                            locality : `$basicInfo.locality`,
                             email : '$basicInfo.email',
-                            city: '$basicInfo.city',
                             price: '$AdditionalDetails.SalePrice',
                             description: '$AdditionalDetails.SpecialRemark',
                             // image: { $arrayElemAt: ['$LandImage', 0] },
@@ -217,9 +221,11 @@ const allListing=async(req,res,next)=>{
                     {
                         $project: {
                             name: '$basicInfo.name',
+                            contact: '$basicInfo.contactNo',
+                            email : '$basicInfo.email',
                             city: '$basicInfo.city',
                             locality : '$basicInfo.locality',
-                            price: '$SmallSpaceDetails.exprectedRent',
+                            price: '$SmallSpaceDetails.expectedRent',
                             description: '$SmallSpaceDescription',
                             // image: { $arrayElemAt: ['$SmallSpaceImage', 0] },
                             type: '$type',
