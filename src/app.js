@@ -6,14 +6,10 @@ const bodyParser=require('body-parser');
 const mongoose=require('mongoose');
 const multer=require('multer');
 
-
-// app.use(bodyParser.urlencoded({ extended: false }));
-// app.use(bodyParser.json());
 app.use(bodyParser.json({ limit: '50mb' })); // Increase to a reasonable size
 app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 // app.use(express.json({limit:"16kb"}));
 // app.use(express.urlencoded({extended:false},{limit:"16kb"}))
-
 
 
 // security
@@ -31,11 +27,8 @@ app.use(helmet());
 
 app.disable('x-powered-by');
 
-
-
 // port
 const port=8081; // process.env.PORT || 8081;
-
 
 // database
 require('./database/Warehouse.db');
@@ -52,7 +45,6 @@ app.get('/test/database',(req,res)=>{
     }
  }
 )
-
 
 // route
 const registerRoute=require('./route/register.route');
@@ -82,22 +74,6 @@ app.get('/test/port',(req,res,next)=>{
     res.status(201).send(`Secure Connection with port ${port}`);
 })
 
-// app.use((err, req, res, next) => {
-    // if (err instanceof multer.MulterError) {
-    //     // A Multer error occurred when uploading
-    //     if (err.code === 'LIMIT_FILE_SIZE') {
-    //         res.status(413).json({ message: 'File size exceeds the limit, Upload an image of 1MB' });
-    //     }
-    // } 
-    // else if (err.message === 'Invalid file type. Only JPEG, PNG, and GIF files are allowed.') {
-    //     res.status(400).json({ message: err.message });
-    // } 
-    // else {
-    //     res.status(500).json({ message: `Server error: ${err.message}` });
-    // }
-// });
-
-
 // error handling // multer error
 
 app.use((err, req, res, next) => {
@@ -123,17 +99,6 @@ app.use((err, req, res, next) => {
                 message: 'Invalid file type. Only JPEG, PNG, and GIF files are allowed.',
               });    
     }
-    // else if(err.message && err.message.includes('ValidationError')) {
-    //     // Extract error messages from Mongoose ValidationError
-    //     // const errorMessages = Object.values(err.errors).map(error => error.message);
-
-    //     return res.status(400).json({
-    //         success: false,
-    //         statusCode: 400,
-    //         message: 'Validation Error',
-    //         errors: err.message
-    //     });
-    // }
     else{
 
         const status=err.status || 0;        
@@ -149,7 +114,6 @@ app.use((err, req, res, next) => {
     }
 
 });
-
 
 app.listen(port,()=>{
     console.log(`Connection with port ${port}`);
