@@ -31,8 +31,7 @@ const verify = (role=[]) => {
             if (role.includes(userRole)) {
              next();
             } else {
-                return res.status(403).json({ message: 'Access denied: You do not have the required role.' 
-                });
+                return next(ApiErrors(403, 'Access denied: You do not have the required role.'));
             }
 
                 // next(); // Call next to proceed to the route handler
