@@ -10,6 +10,7 @@ const ApiResponses=require('../utils/ApiResponse/ApiResponse');
 const { database } = require('firebase-admin');
 const Enquiry = require('../model/Enquiry.model');
 const Requirement = require('../model/Requirement.model');
+const SmallSpace = require('../model/SmallSpace.model');
 
 const UpdateVerifiedStatus=async(req,res,next)=>{
     const checkUser=await Register.findOne({_id:req.user.id});
@@ -20,27 +21,25 @@ const UpdateVerifiedStatus=async(req,res,next)=>{
     }
     if(req.user.id != checkUser._id)
     {
-        return next(ApiErrors(401,"Unauthenticaed User. You are not allowed to add products"));
+        return next(ApiErrors(401,"Unauthenticaed User. You are not allowed to Change Verified Status"));
     }
-    if(req.user.role !== req.role)
-    {
-        return next(ApiErrors(403,"Access Denied. Only Admin can Change the verified Status"));
-    }
+
     const id=req.query.id;
     if(!id)
     {
-        return next(ApiErrors(400,"Provide the ID of the Listing that you want to update")); 
+        return next(ApiErrors(400,"Provide the ID of the Listing")); 
     }
     try {
-        const models = [Warehouse, ThreePLWarehouse, ThreePLColdstorage, LandModel ];
+        const models = [Warehouse, ThreePLWarehouse, ThreePLColdstorage, LandModel, SmallSpace];
 
         let data = null;
+        let status = null
 
         for (const model of models) {
             const found = await model.findOne({_id: id});
         
             if (found) {
-                const status = !found.isVerified; // Corrected field name
+                status = !found.isVerified; // Corrected field name
         
                 data = await model.findByIdAndUpdate(
                     id,
@@ -58,14 +57,15 @@ const UpdateVerifiedStatus=async(req,res,next)=>{
             }
         }        
         
-        // return next(ApiResponses(200,data,'Warehouse is Verified Status Updated'));
-        
+        // return next(ApiResponses(200,data,'Warehouse is Verified Status Updated'));        
+ 
         if(data)
         {
-            return next(ApiResponses(200,data,'Warehouse is Verified Status Updated'));
+            return next(ApiResponses(200,data,`Listing Verified Status Updated to ${status}`));
         }
-        return next(ApiErrors(400,"No Warehouse or cold Storage found with provided id"));         
+        return next(ApiErrors(400,"No Listing found with provided id"));         
     } catch (error) {
+        return next(ApiErrors(500, `Error : ${error.message}`));
     }
 }
 
@@ -78,26 +78,25 @@ const UpdateFeatureStatus=async(req,res,next)=>{
     }
     if(req.user.id != checkUser._id)
     {
-        return next(ApiErrors(401,"Unauthenticaed User. You are not allowed to add products"));
+        return next(ApiErrors(401,"Unauthenticaed User. You are not allowed to Change The Featured Status"));
     }
-    if(req.user.role !== req.role)
-    {
-        return next(ApiErrors(403,"Access Denied. Only Admin can Change the verified Status"));
-    }
+
     const id=req.query.id;
     if(!id)
     {
-        return next(ApiErrors(400,"Provide the ID of the Warehouse/ColdStorage that you want to update")); 
+        return next(ApiErrors(400,"Provide the ID of the Listing")); 
     }
     try {
-        const models = [Warehouse, ThreePLWarehouse, ThreePLColdstorage];
+        const models = [Warehouse, ThreePLWarehouse, ThreePLColdstorage,LandModel, SmallSpace];
+
+        let status = null;
 
         // Iterate through each model to find the document by ID
         for (const model of models) {
             const found = await model.findOne({_id: id});
             
             if (found) {
-                const status = !found.isFeatured; // Corrected field name
+                status = !found.isFeatured; // Corrected field name
         
                 data = await model.findByIdAndUpdate(
                     id,
@@ -116,15 +115,15 @@ const UpdateFeatureStatus=async(req,res,next)=>{
         
         if(data)
         {
-            return next(ApiResponses(200,data,'Warehouse is Verified Status Updated'));
+            return next(ApiResponses(200,data,`Listing Featured Status Updated ${status}`));
         }
-        return next(ApiErrors(400,"No Warehouse or cold Storage found with provided id"));        
+        return next(ApiErrors(400,"No Listing found with provided id"));        
     } catch (error) {
     }
 }
 
 
-// All Warehouse + 3PL-Warehouser + 3PL-ColdStorage 
+// All Listing 
 const allListing=async(req,res,next)=>{
     try {
 
@@ -135,8 +134,8 @@ const allListing=async(req,res,next)=>{
                     contact : '$basicInfo.contactNo',
                     email : '$basicInfo.email',
                     city: '$basicInfo.city',
-                    // price: '$floorRent.expectedRent',
-                    // description: '$wareHouseDescription',
+                    price: '$floorRent.expectedRent',
+                    description: '$wareHouseDescription',
                     // image: { $arrayElemAt: ['$wareHouseImage', 0] }, 
                     type: '$type',
                     isVerified : '$isVerified',
@@ -154,9 +153,8 @@ const allListing=async(req,res,next)=>{
                             contact : '$company_details.mobileNo',
                             email : '$company_details.email',
                             city: '$warehouse_details.warehouseAddress.city',
-                            // state: 
-                            // price: '$warehouse_details.otherDetails.DepositRent',
-                            // description: '$warehouse_details.otherDetails.DescribeFacility',
+                            price: '$warehouse_details.otherDetails.DepositRent',
+                            description: '$warehouse_details.otherDetails.DescribeFacility',
                             // image: { $arrayElemAt: ['$warehouse_details.WarehouseImage', 0] }, 
                             type: '$type',
                             isVerified : '$isVerified',
@@ -178,9 +176,8 @@ const allListing=async(req,res,next)=>{
                             contact : '$company_details.mobileNo',
                             email : '$company_details.email',
                             city: '$cold_storage_details.ColdStorageAddress.city',
-
-                            // price: '$cold_storage_details.AdditionDetails.DepositRent',
-                            // description: '$cold_storage_details.AdditionDetails.DescribeFacility',
+                            price: '$cold_storage_details.AdditionDetails.DepositRent',
+                            description: '$cold_storage_details.AdditionDetails.DescribeFacility',
                             // image: { $arrayElemAt: ['$cold_storage_details.ColdStorageImage', 0] },
                             type: '$type',
                             isVerified : '$isVerified',
@@ -201,9 +198,30 @@ const allListing=async(req,res,next)=>{
                             city: '$basicInfo.city',
                             email : '$basicInfo.email',
                             city: '$basicInfo.city',
-                            // price: '$AdditionalDetails.SalePrice',
-                            // description: '$AdditionalDetails.SpecialRemark',
+                            price: '$AdditionalDetails.SalePrice',
+                            description: '$AdditionalDetails.SpecialRemark',
                             // image: { $arrayElemAt: ['$LandImage', 0] },
+                            type: '$type',
+                            isVerified : '$isVerified',
+                            isFeatured : '$isFeatured',
+                            WTRA: { $ifNull: ['$WTRA', null] }
+                        }, 
+                    }
+                  ]
+                }
+              },
+              {
+                $unionWith: {
+                  coll: 'smallspaces', // Correct collection name
+                  pipeline: [
+                    {
+                        $project: {
+                            name: '$basicInfo.name',
+                            city: '$basicInfo.city',
+                            locality : '$basicInfo.locality',
+                            price: '$SmallSpaceDetails.exprectedRent',
+                            description: '$SmallSpaceDescription',
+                            // image: { $arrayElemAt: ['$SmallSpaceImage', 0] },
                             type: '$type',
                             isVerified : '$isVerified',
                             isFeatured : '$isFeatured',
@@ -216,10 +234,11 @@ const allListing=async(req,res,next)=>{
         ])
 
          if (All.length===0) {
-            return next(ApiErrors(400, `No Warehouse found`));
+            return next(ApiErrors(400, `No Listing found`));
         }
-        return next(ApiResponses(200,All,'List of All Warehouse & 3PLWarehouse and 3PLColdStorage'))
+        console.log(`Total Listing`,All.length);
 
+        return next(ApiResponses(200,All,'List of All The Listing'))
     } catch (error) {
         console.error('Internal Server Error:', error);
         return next(ApiErrors(500,`Internal Serve Error, Error -: ${error.message} `)); 
@@ -292,8 +311,22 @@ const EnquiryList = async (req,res,next) =>{
                         Area : enquiry.ListingID.landInfo.TotalLand,
                     }
                 }
+                else if (enquiry.ListingModel === 'SmallSpace') {
+                    await Enquiry.populate(enquiry,{
+                        path: "ListingID",
+                        select: 'basicInfo.address basicInfo.city SmallSpaceDetails.expectedRent SmallSpaceDetails.totalPlotArea'
+                    });
+                    
+                    enquiry.ListingID={
+                        address : enquiry.ListingID.basicInfo.address,
+                        city : enquiry.ListingID.basicInfo.city,
+                        Rent : enquiry.ListingID.SmallSpaceDetails.expectedRent,
+                        Area : enquiry.ListingID.SmallSpaceDetails.totalPlotArea,
+                    }
+                }
         }
-
+        console.log('Total Enquiry List', List.length);
+    
         return next(ApiResponses(200,List,'Enquiry List'));
    
     } catch (error) {
@@ -344,6 +377,14 @@ const ListerList= async(req,res,next) => {
             }
         },
         {
+            $lookup:{
+                from: 'smallspaces',
+                localField: '_id',
+                foreignField: 'Lister',
+                as: 'Small'
+            }
+        },
+        {
             $project: {
                 firstname: 1, // Lister's firstname
                 lastname: 1, // Lister's lastname
@@ -352,10 +393,14 @@ const ListerList= async(req,res,next) => {
                 warehouseCount: { $size: '$warehouses' }, // Count of associated warehouses
                 coldStorageCount: { $size: '$coldStorages' }, // Count of associated cold storages
                 plWarehouseCount: { $size: '$plWarehouses' }, // Count of associated PL warehouses
-                landCount: { $size: '$land' }
+                landCount: { $size: '$land' },
+                smallspaceCount: { $size: '$Small' }
             }
         } 
     ]);
+
+    console.log('Total Listers',Lister.length);
+    
     return next(ApiResponses(200,Lister,`Lister's List Detail`));
 }
 
@@ -364,6 +409,7 @@ const RequirementList = async(req,res,next)=>{
     // return res.json(requirement.length);
     if(requirement.length > 0)
     {
+        console.log('Total Requirement',requirement.length);
         return next(ApiResponses(200, requirement, 'Requirement List'));
     }
     return next(ApiErrors(404, `No requirment List found`)); 
@@ -379,12 +425,9 @@ const RemoveRequirement= async(req,res,next)=>{
     }
     if(req.user.id != checkUser._id)
     {
-        return next(ApiErrors(401,"Unauthenticaed User. You are not allowed to add products"));
+        return next(ApiErrors(401,"Unauthenticaed User. You are not allowed to Remove Requirement"));
     }
-    if(req.user.role !== req.role)
-    {
-        return next(ApiErrors(403,"Access Denied. Only Admin can Change the verified Status"));
-    }
+
     const id=req.query.id;
     if(!id)
     {
@@ -400,9 +443,6 @@ const RemoveRequirement= async(req,res,next)=>{
     });
 }
 
-// const RemoveLister = async(req,res,next)=>{
-// }
-
 const RemoveListing = async(req,res,next)=>{
            
     const checkUser=await Register.findOne({_id:req.user.id});
@@ -415,16 +455,12 @@ const RemoveListing = async(req,res,next)=>{
     {
         return next(ApiErrors(401,"Unauthenticaed User. You are not allowed to add products"));
     }
-    if(req.user.role !== req.role)
-    {
-        return next(ApiErrors(403,"Access Denied. Only Admin can Change the verified Status"));
-    }
     const id=req.query.id;
     if(!id)
     {
-        return next(ApiErrors(400,"Provide the ID of the Enquiry that you want to remove")); 
-    } 
-    const models = [Warehouse, ThreePLWarehouse, ThreePLColdstorage, LandModel];
+        return next(ApiErrors(400,"Provide the ID of the Enquiry that you want to remove"));
+    }
+    const models = [Warehouse, ThreePLWarehouse, ThreePLColdstorage, LandModel, SmallSpace];
 
     try {
         for (const model of models) {
@@ -459,11 +495,7 @@ const RemoveEnquiry = async(req,res,next)=>{
     }
     if(req.user.id != checkUser._id)
     {
-        return next(ApiErrors(401,"Unauthenticaed User. You are not allowed to add products"));
-    }
-    if(req.user.role !== req.role)
-    {
-        return next(ApiErrors(403,"Access Denied. Only Admin can Change the verified Status"));
+        return next(ApiErrors(401,"Unauthenticaed User. You are not allowed to Remove Enquiry"));
     }
     const id=req.query.id;
     if(!id)
@@ -481,6 +513,61 @@ const RemoveEnquiry = async(req,res,next)=>{
 }
 
 
+const RemoveLister = async(req,res,next)=>{
+    const checkUser=await Register.findOne({_id:req.user.id});
+
+    if(!checkUser)
+    {
+        return next(ApiErrors(401,"Unauthenticaed User. Your Data do not exist in the database"));   
+    }
+    if(req.user.id != checkUser._id)
+    {
+        return next(ApiErrors(401,"Unauthenticaed User. You are not allowed to add products"));
+    }
+    if(req.user.role !== req.role)
+    {
+        return next(ApiErrors(403,"Access Denied. Only Admin can Change the verified Status"));
+    }
+    const id=req.query.id;
+    if(!id)
+    {
+        return next(ApiErrors(400,"Provide the ID of the Enquiry that you want to remove")); 
+    } 
+    try {
+        const findID= await Register.findById(id);
+        if(!findID)
+        {
+            return next(ApiErrors(404,"No User Found with this ID")); 
+        }
+        const models=[LandModel,Warehouse, ThreePLWarehouse, ThreePLColdstorage,SmallSpace];
+
+
+        for(const model of models)
+        {
+            const found= await model.find({Lister:id});
+
+
+            if(found.length !== 0)
+            {               
+                let ListingIDs=found.map(listing => listing._id);
+                //  return res.json(ListingIDs);
+                await Enquiry.deleteMany({ListingID:{$in:ListingIDs}});
+
+                await model.deleteMany({Lister:{$in:id}})
+            }
+        }
+
+        await Enquiry.deleteMany({UserID:{$in:id}});
+        await Register.findByIdAndDelete({id});
+
+    } catch (error) {
+         return next(ApiErrors(500, `Error while deleting: ${error.message}`));
+    }
+
+}
+
+
+
 
 module.exports={
    UpdateVerifiedStatus,
@@ -491,5 +578,6 @@ module.exports={
    RemoveEnquiry,
    RemoveListing,
    RequirementList,
-   RemoveRequirement
+   RemoveRequirement,
+   RemoveLister
 }
