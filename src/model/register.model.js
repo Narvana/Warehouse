@@ -3,38 +3,19 @@ const validator=require('validator');
 
 const registerSchema=new mongoose.Schema(
     {
-       firstname: {
+        role:{
             type:String,
-            required:true,
-            trim:true,
-        },        
-        lastname: {
-            type:String,
-            required:true,
-            trim:true
+            required: [true,'Role is required'],
+            enum:['ADMIN','LISTER']
         },
-        username: {
+        password:{
             type:String,
             required:true,
             trim:true,
-            unique:true,
-        },
-        contactNo:{
-            type: String,
-            required: true,
-            trim:true,
-            unique: true,
-            validate: {
-                validator: function(value) {
-                    // Ensure the phone number is 10 digits long
-                    return /^[0-9]{10}$/.test(value);
-                },
-                message: 'Contact number must be a 10-digit number'
-            }
         },
         email:{
             type:String,
-            required:true,
+            required:[true,'Email is required'],
             trim:true,
             unique:true,
             validate:{
@@ -45,16 +26,35 @@ const registerSchema=new mongoose.Schema(
                 }
             }
         },
-        password:{
+        contactNo:{
+            type: String,
+            required: [true,'Contact Number is required'],
+            trim:true,
+            unique: true,
+            validate: {
+                validator: function(value) {
+                    // Ensure the phone number is 10 digits long
+                    return /^[0-9]{10}$/.test(value);
+                },
+                message: 'Contact number must be a 10-digit number'
+            }
+        },
+        username:{
             type:String,
-            required:true,
+            required:[true,'Username is required'],
             trim:true
         },
-        role:{
+        lastname: {
             type:String,
-            required: true,
-            enum:['ADMIN','USER','LISTER']
+            required:[true,'Lastname is required'],
+            trim:true
         },
+       firstname: {
+            type:String,
+            required:[true,'Firstname is required'],
+            trim:true,
+        },        
+
         refreshToken:
         {
             type:String,
