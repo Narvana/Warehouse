@@ -190,7 +190,14 @@ const ThreePLColdstorageSchema= new mongoose.Schema({
             type: String,
             required:  [true, 'Email is required for Company details'],
             unique: true,
-            trim:true
+            trim:true,
+            validate:{
+                validator(value){
+                    if(!validator.isEmail(value)){
+                       throw new Error("Write a Valid Email")
+                    }
+                }
+            }
         }, 
         contact_name:{
             type: String,
