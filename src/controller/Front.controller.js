@@ -671,145 +671,148 @@ const searchWareHouseAll=async(req,res,next)=>
             }
         ]);
 
-        if (Result.length === 0 && locality && city) {
+        let message=null;
+        if (Result.length === 0 && locality && city) 
+        {
+            delete warehouseMatchConditions['basicInfo.locality'];
+            delete threePLWarehouseMatchConditions['warehouse_details.warehouseAddress.area'];
+            delete threePLColdstorageMatchConditions['cold_storage_details.ColdStorageAddress.area'];
+            delete landConditions['basicInfo.locality'];
+            delete smallspace['basicInfo.locality'];
 
-        delete warehouseMatchConditions['basicInfo.locality'];
-        delete threePLWarehouseMatchConditions['warehouse_details.warehouseAddress.area'];
-        delete threePLColdstorageMatchConditions['cold_storage_details.ColdStorageAddress.area'];
-        delete landConditions['basicInfo.locality'];
-        delete smallspace['basicInfo.locality'];
-
-        Result = await Warehouse.aggregate([
-            {
-                $match: warehouseMatchConditions,
-            },
-            {
-                $project: {
-                    name : '$basicInfo.name',
-                    contact : '$basicInfo.contactNo',
-                    email : '$basicInfo.email',
-                    city: '$basicInfo.city',
-                    locality: '$basicInfo.locality',
-                    price: '$floorRent.expectedRent',
-                    description: '$wareHouseDescription',
-                    image: { $arrayElemAt: ['$wareHouseImage', 0] }, 
-                    type: '$type',
-                    isVerified : '$isVerified',
-                    isFeatured : '$isFeatured',
-                    WTRA: '$WTRA'
-                }
-            },
-            {
-                $unionWith: {
-                    coll: 'threeplwarehouses',
+            Result = await Warehouse.aggregate([
+                {
+                    $match: warehouseMatchConditions,
+                },
+                {
+                    $project: {
+                        name : '$basicInfo.name',
+                        contact : '$basicInfo.contactNo',
+                        email : '$basicInfo.email',
+                        city: '$basicInfo.city',
+                        locality: '$basicInfo.locality',
+                        price: '$floorRent.expectedRent',
+                        description: '$wareHouseDescription',
+                        image: { $arrayElemAt: ['$wareHouseImage', 0] }, 
+                        type: '$type',
+                        isVerified : '$isVerified',
+                        isFeatured : '$isFeatured',
+                        WTRA: '$WTRA'
+                    }
+                },
+                {
+                    $unionWith: {
+                        coll: 'threeplwarehouses',
+                        pipeline: [
+                            {
+                                $match: threePLWarehouseMatchConditions,
+                            },
+                            {
+                                $project: {
+                                    name: '$company_details.company_name',
+                                    contact : '$company_details.mobileNo',
+                                    email : '$company_details.email',
+                                    city: '$warehouse_details.warehouseAddress.city',
+                                    locality : '$warehouse_details.warehouseAddress.area',
+                                    price: '$warehouse_details.otherDetails.DepositRent',
+                                    description: '$warehouse_details.otherDetails.DescribeFacility',
+                                    image: { $arrayElemAt: ['$warehouse_details.WarehouseImage', 0] }, 
+                                    type: '$type',
+                                    isVerified : '$isVerified',
+                                    isFeatured : '$isFeatured',
+                                    WTRA: '$WTRA'
+                                }
+                            }
+                        ]
+                    }
+                },
+                {
+                    $unionWith: {
+                        coll: 'threeplcoldstorages',
+                        pipeline: [
+                            {
+                                $match: threePLColdstorageMatchConditions,
+                            },
+                            {
+                                $project: {
+                                    name: '$company_details.company_name',
+                                    contact : '$company_details.mobileNo',
+                                    email : '$company_details.email',
+                                    city: '$cold_storage_details.ColdStorageAddress.city',
+                                    locality: '$cold_storage_details.ColdStorageAddress.area',
+                                    price: '$cold_storage_details.AdditionDetails.DepositRent',
+                                    description: '$cold_storage_details.AdditionDetails.DescribeFacility',
+                                    image: { $arrayElemAt: ['$cold_storage_details.ColdStorageImage', 0] },
+                                    type: '$type',
+                                    isVerified : '$isVerified',
+                                    isFeatured : '$isFeatured',
+                                    WTRA: { $ifNull: ['$WTRA', null] }
+                                }
+                            }
+                        ]
+                    }
+                },
+                {
+                    $unionWith: {
+                    coll: 'landmodels', // Correct collection name
                     pipeline: [
                         {
-                            $match: threePLWarehouseMatchConditions,
+                            $match: landConditions
                         },
                         {
                             $project: {
-                                name: '$company_details.company_name',
-                                contact : '$company_details.mobileNo',
-                                email : '$company_details.email',
-                                city: '$warehouse_details.warehouseAddress.city',
-                                locality : '$warehouse_details.warehouseAddress.area',
-                                price: '$warehouse_details.otherDetails.DepositRent',
-                                description: '$warehouse_details.otherDetails.DescribeFacility',
-                                image: { $arrayElemAt: ['$warehouse_details.WarehouseImage', 0] }, 
+                                name: '$basicInfo.name',
+                                contact: '$basicInfo.contactNo',
+                                city: '$basicInfo.city',
+                                locality : `$basicInfo.locality`,
+                                email : '$basicInfo.email',
+                                price: '$AdditionalDetails.SalePrice',
+                                description: '$AdditionalDetails.SpecialRemark',
+                                image: { $arrayElemAt: ['$LandImage', 0] },
                                 type: '$type',
                                 isVerified : '$isVerified',
                                 isFeatured : '$isFeatured',
-                                WTRA: '$WTRA'
-                            }
+                                WTRA: { $ifNull: ['$WTRA', null] }
+                            }, 
                         }
                     ]
-                }
-            },
-            {
-                $unionWith: {
-                    coll: 'threeplcoldstorages',
+                    }
+                },
+                {
+                    $unionWith: {
+                    coll: 'smallspaces', // Correct collection name
                     pipeline: [
                         {
-                            $match: threePLColdstorageMatchConditions,
+                            $match: smallspace
                         },
                         {
                             $project: {
-                                name: '$company_details.company_name',
-                            contact : '$company_details.mobileNo',
-                            email : '$company_details.email',
-                            city: '$cold_storage_details.ColdStorageAddress.city',
-                            locality: '$cold_storage_details.ColdStorageAddress.area',
-                            price: '$cold_storage_details.AdditionDetails.DepositRent',
-                            description: '$cold_storage_details.AdditionDetails.DescribeFacility',
-                            image: { $arrayElemAt: ['$cold_storage_details.ColdStorageImage', 0] },
-                            type: '$type',
-                            isVerified : '$isVerified',
-                            isFeatured : '$isFeatured',
-                            WTRA: { $ifNull: ['$WTRA', null] }
-                            }
+                            name: '$basicInfo.name',
+                                contact: '$basicInfo.contactNo',
+                                email : '$basicInfo.email',
+                                city: '$basicInfo.city',
+                                locality : '$basicInfo.locality',
+                                price: '$SmallSpaceDetails.expectedRent',
+                                description: '$SmallSpaceDescription',
+                                image: { $arrayElemAt: ['$SmallSpaceImage', 0] },
+                                type: '$type',
+                                isVerified : '$isVerified',
+                                isFeatured : '$isFeatured',
+                                WTRA: { $ifNull: ['$WTRA', null] }
+                            }, 
                         }
                     ]
-                }
-            },
-            {
-                $unionWith: {
-                  coll: 'landmodels', // Correct collection name
-                  pipeline: [
-                    {
-                        $match: landConditions
-                    },
-                    {
-                        $project: {
-                            name: '$basicInfo.name',
-                            contact: '$basicInfo.contactNo',
-                            city: '$basicInfo.city',
-                            locality : `$basicInfo.locality`,
-                            email : '$basicInfo.email',
-                            price: '$AdditionalDetails.SalePrice',
-                            description: '$AdditionalDetails.SpecialRemark',
-                            image: { $arrayElemAt: ['$LandImage', 0] },
-                            type: '$type',
-                            isVerified : '$isVerified',
-                            isFeatured : '$isFeatured',
-                            WTRA: { $ifNull: ['$WTRA', null] }
-                        }, 
                     }
-                  ]
                 }
-              },
-              {
-                $unionWith: {
-                  coll: 'smallspaces', // Correct collection name
-                  pipeline: [
-                    {
-                        $match: smallspace
-                    },
-                    {
-                        $project: {
-                          name: '$basicInfo.name',
-                            contact: '$basicInfo.contactNo',
-                            email : '$basicInfo.email',
-                            city: '$basicInfo.city',
-                            locality : '$basicInfo.locality',
-                            price: '$SmallSpaceDetails.expectedRent',
-                            description: '$SmallSpaceDescription',
-                            image: { $arrayElemAt: ['$SmallSpaceImage', 0] },
-                            type: '$type',
-                            isVerified : '$isVerified',
-                            isFeatured : '$isFeatured',
-                            WTRA: { $ifNull: ['$WTRA', null] }
-                        }, 
-                    }
-                  ]
-                }
-              }
-        ]);
+            ]);
+
+            message = 'No Listing Found in selected locality';
         }
 
         if (Result.length === 0) {
             return next(ApiErrors(404, `No warehouse found matching the criteria`));
         }
-        return next(ApiResponses(200, Result, 'Warehouse Details'));
+        return next(ApiResponses(200, Result, message ? message : 'Searched Listings'));
     } catch (error) {
         console.log({error});        
         return next(ApiErrors(500, `Error retrieving warehouse: ${error.message}`));
