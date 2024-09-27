@@ -10,6 +10,7 @@ const ApiResponses=require('../utils/ApiResponse/ApiResponse');
 const Requirement = require('../model/Requirement.model');
 const LandModel = require('../model/Land.model');
 const SmallSpace = require('../model/SmallSpace.model');
+const ApiResponse = require('../utils/ApiResponse/ApiResponse');
 
 const AllListing=async(req,res,next)=>{
     try {
@@ -819,6 +820,34 @@ const searchWareHouseAll=async(req,res,next)=>
     }    
 }
 
+const AllSmallSpace = async(req,res,next)=>{
+    const smallSpace = await SmallSpace.aggregate([
+       {
+            $project: {
+                name: '$basicInfo.name',
+                contact: '$basicInfo.contactNo',
+                email : '$basicInfo.email',
+                city: '$basicInfo.city',
+                locality : '$basicInfo.locality',
+                price: '$SmallSpaceDetails.expectedRent',
+                description: '$SmallSpaceDescription',
+                image: { $arrayElemAt: ['$SmallSpaceImage', 0] },
+                type: '$type',
+                isVerified : '$isVerified',
+                isFeatured : '$isFeatured',
+                WTRA: { $ifNull: ['$WTRA', null] }
+            }
+       } 
+    ]);
+
+    if(smallSpace.length === 0)
+    {
+        return next(ApiResponse(200,smallSpace,'Currently No Small Space Present'));
+    }
+
+    return next(ApiResponse(200,smallSpace,`Total Small Spaces Present -: ${smallSpace.length}`));
+}
+ 
 const SendEnquiry = async(req,res,next)=>{
 
     const  UserID=req.user.id;
@@ -908,6 +937,7 @@ const SendRequirement=async(req,res,next)=>{
 module.exports={
     // AllVerified,
     AllFeatured,
+    AllSmallSpace,
     searchWareHouseAll,
     recentWarehouse,
     AllListing,
