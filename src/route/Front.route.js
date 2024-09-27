@@ -21,4 +21,6 @@ router.post('/Send/Enquiry',verify(['LISTER', 'ADMIN']),FrontController.SendEnqu
 
 router.post('/Send/Requirement',FrontController.SendRequirement);
 
+router.get('/All/SmallSpace',FrontController.AllSmallSpace);
+
 module.exports=router
