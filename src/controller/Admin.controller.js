@@ -4,7 +4,7 @@ const ThreePL=require('../model/3PL.model');
 const ThreePLColdstorage=require('../model/3PL.Coldstorage.model');
 const ThreePLWarehouse=require('../model/3PL.Warehouse.model');
 const LandModel=require('../model/Land.model');
-const mongoose = require('mongoose');
+const Log=require('../model/Log.model')
 const ApiErrors=require('../utils/ApiResponse/ApiErrors');
 const ApiResponses=require('../utils/ApiResponse/ApiResponse');
 const { database } = require('firebase-admin');
@@ -331,8 +331,9 @@ const EnquiryList = async (req,res,next) =>{
                     }
                 }
         }
+
         console.log('Total Enquiry List', List.length);
-    
+
         return next(ApiResponses(200,List,'Enquiry List'));
    
     } catch (error) {
@@ -342,7 +343,7 @@ const EnquiryList = async (req,res,next) =>{
     }
 } 
 
-const ListerList= async(req,res,next) => {
+const ListerList = async(req,res,next) => {
 
     const Lister = await Register.aggregate([
         {
@@ -572,7 +573,26 @@ const RemoveLister = async(req,res,next)=>{
 
 }
 
+const GetLog = async(req,res,next)=>{
 
+    const Logs=await Log.aggregate([
+        {
+            $group: {
+                _id: "$SearchedCity",  // Group by the 'SearchedCity' field
+                count: { $sum: 1 }     // Count occurrences
+            }
+        },
+        {
+            $project: {
+                _id: 0,                // Exclude the default _id field
+                city: "$_id",          // Rename _id to 'city'
+                count: 1               // Keep the count field
+            }
+        }
+     ])
+
+    return next(ApiResponses(200,Logs,`All Logs ${Logs.length}`));
+}
 
 
 module.exports={
@@ -585,5 +605,6 @@ module.exports={
    RemoveListing,
    RequirementList,
    RemoveRequirement,
-   RemoveLister
+   RemoveLister,
+   GetLog
 }
