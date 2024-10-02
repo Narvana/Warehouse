@@ -7,6 +7,10 @@ const LandModel=require('./Land.model');
 const SmallSpace = require('./SmallSpace.model');
 const EnquirySchema = new mongoose.Schema(
     {
+        UserName:{
+            type:String,
+            default:'User'
+        },
         UserID : {
             type: mongoose.Schema.Types.ObjectId,
             required: true,
@@ -52,9 +56,13 @@ const EnquirySchema = new mongoose.Schema(
             required: true,
             enum: ['ThreePLWarehouse', 'ThreePLColdstorage', 'Warehouse', 'LandModel','SmallSpace'],
             // select: false 
+        },
+        EnquiryMessage:{
+            type:String,
+            default: null
         }
     }
-)  
+)
 
 EnquirySchema.pre('save', async function(next) {
     const enquiry = this;
