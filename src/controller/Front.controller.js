@@ -4,6 +4,7 @@ const Register=require('../model/register.model');
 const ThreePL=require('../model/3PL.model');
 const ThreePLColdstorage=require('../model/3PL.Coldstorage.model');
 const ThreePLWarehouse=require('../model/3PL.Warehouse.model');
+const Log=require('../model/Log.model');
 const mongoose = require('mongoose');
 const ApiErrors=require('../utils/ApiResponse/ApiErrors');
 const ApiResponses=require('../utils/ApiResponse/ApiResponse');
@@ -852,13 +853,14 @@ const SendEnquiry = async(req,res,next)=>{
 
     const  UserID=req.user.id;
 
-    try {
+    try 
+    {
         const User= await Register.findById(UserID)
         if(!User)
         {
             return next(ApiErrors(404,'No User Found with The ID Provided'));
         }
-        const { ListingID , ListingModel } = req.body;
+        const { UserName , ListingID , ListingModel, EnquiryMessage } = req.body;
         if(!ListingID || !ListingID.trim() || !ListingModel || !ListingModel.trim())
         {
             return next(ApiErrors(400,'Please Provide Both the field Listing ID and Listing Model to send Enquiry')); 
@@ -895,9 +897,11 @@ const SendEnquiry = async(req,res,next)=>{
         }
 
         const enquiry = new Enquiry({
+            UserName,
             UserID,
             ListingID,
-            ListingModel
+            ListingModel,
+            EnquiryMessage
         })
 
         const final = await enquiry.save();
@@ -934,6 +938,37 @@ const SendRequirement=async(req,res,next)=>{
     }  
 }
 
+const AddLog=async(req,res,next)=>{
+    
+    const {user}=req.query;
+
+    const checkUser = await Register.findOne({_id:user});
+
+    // return res.json(checkUser);
+
+    let userID=null;
+
+    // if(checkUser)
+    // {
+    //     userID=checkUser._id;
+    // }
+
+    const {SearchedCity,SearchedLocality} = req.body;
+
+    const log = new Log({
+        userID: checkUser ? checkUser._id : null,
+        SearchedCity,
+        SearchedLocality
+    })
+
+    const addedlog = await log.save();
+    return next(ApiResponse(200,addedlog,'Log Added'));
+}
+
+
+
+
+
 module.exports={
     // AllVerified,
     AllFeatured,
@@ -943,6 +978,7 @@ module.exports={
     AllListing,
     SendEnquiry,
     SendRequirement,
+    AddLog,
 }
 
 // const AllVerified=async(req,res,next)=>{
