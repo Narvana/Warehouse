@@ -4,7 +4,6 @@ const router=express.Router();
 
 const {verify}=require('../middleware/token/verifyToken');
 
-
 const FrontController=require('../controller/Front.controller');
 
 router.get('/get/All/Listing',FrontController.AllListing)
@@ -22,5 +21,7 @@ router.post('/Send/Enquiry',verify(['LISTER', 'ADMIN']),FrontController.SendEnqu
 router.post('/Send/Requirement',FrontController.SendRequirement);
 
 router.get('/All/SmallSpace',FrontController.AllSmallSpace);
+
+router.post('/Add/Log',FrontController.AddLog);
 
 module.exports=router
