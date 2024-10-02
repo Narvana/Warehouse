@@ -29,4 +29,6 @@ router.delete('/Remove/Requirement',verify(['ADMIN']),AdminController.RemoveRequ
 
 router.delete('/Remove/Lister',verify(['ADMIN']),AdminController.RemoveLister);
 
+router.get('/Get/Log',verify(['ADMIN']),AdminController.GetLog);
+
 module.exports=router
