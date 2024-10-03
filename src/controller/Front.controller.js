@@ -510,8 +510,8 @@ const searchWareHouseAll=async(req,res,next)=>
         warehouseMatchConditions['floorRent.expectedRent'] = priceCondition;
         threePLWarehouseMatchConditions['warehouse_details.otherDetails.DepositRent'] = priceCondition;
         threePLColdstorageMatchConditions['cold_storage_details.AdditionDetails.DepositRent'] = priceCondition;
-        landConditions['AdditionalDetails.SalePrice'] = price;
-        smallspace['SmallSpaceDetails.expectedRent'] = city;
+        landConditions['AdditionalDetails.SalePrice'] = priceCondition;
+        smallspace['SmallSpaceDetails.expectedRent'] = priceCondition;
     }
     
     if (propertytype) {
@@ -525,7 +525,7 @@ const searchWareHouseAll=async(req,res,next)=>
         warehouseMatchConditions['layout.totalPlotArea'] = selectArea;
         threePLWarehouseMatchConditions['warehouse_details.Storage.TotalArea'] = selectArea;
         threePLColdstorageMatchConditions['cold_storage_details.ColdStorageFacility.TotalArea'] = selectArea;
-        smallspace['SmallSpaceDetails.totalPlotArea'] = city;
+        smallspace['SmallSpaceDetails.totalPlotArea'] = selectArea;
     }
     
     if (type) {
@@ -814,7 +814,7 @@ const searchWareHouseAll=async(req,res,next)=>
         if (Result.length === 0) {
             return next(ApiErrors(404, `No warehouse found matching the criteria`));
         }
-        return next(ApiResponses(200, Result, message ? message : 'Searched Listings'));
+        return next(ApiResponses(200, Result, message ? message : `Searched Listings Total ${Result.length}`));
     } catch (error) {
         console.log({error});        
         return next(ApiErrors(500, `Error retrieving warehouse: ${error.message}`));
