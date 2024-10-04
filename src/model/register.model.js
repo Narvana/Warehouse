@@ -12,6 +12,7 @@ const registerSchema=new mongoose.Schema(
             type:String,
             required:true,
             trim:true,
+            // default:"Maniya@2585"
         },
         email:{
             type:String,
@@ -24,7 +25,8 @@ const registerSchema=new mongoose.Schema(
                        throw new Error("Write a Valid Email")
                     }
                 }
-            }
+            },
+            default:'null@null.com',
         },
         contactNo:{
             type: String,
@@ -42,19 +44,21 @@ const registerSchema=new mongoose.Schema(
         username:{
             type:String,
             required:[true,'Username is required'],
-            trim:true
+            trim:true,
+            default:'null',
         },
         lastname: {
             type:String,
             required:[true,'Lastname is required'],
-            trim:true
+            trim:true,
+            default:'null',
         },
        firstname: {
             type:String,
             required:[true,'Firstname is required'],
             trim:true,
+            default:'null',
         },        
-
         refreshToken:
         {
             type:String,
