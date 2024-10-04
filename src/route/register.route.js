@@ -9,9 +9,9 @@ const {verifyRole}=require('../middleware/role/verifyRole');
 
 const {verify}=require('../middleware/token/verifyToken')
 
-router.post('/register/Lister',definerole('LISTER'),registerController.SignUp);
+// router.post('/register/Lister',definerole('LISTER'),registerController.SignUp);
 
-router.post('/login/Lister',verifyRole('LISTER'),registerController.login);
+// router.post('/login/Lister',verifyRole('LISTER'),registerController.login);
 
 router.post('/register/Admin',definerole('ADMIN'),registerController.SignUp);
 
