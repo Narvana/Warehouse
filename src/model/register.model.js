@@ -1,6 +1,11 @@
 const mongoose=require('mongoose');
 const validator=require('validator');
 
+const generateTimestampEmail = () => {
+    const timestamp = Date.now(); // Get current timestamp
+    return `${timestamp}@null.com`; // Combine timestamp with '@null.com'
+};
+
 const registerSchema=new mongoose.Schema(
     {
         role:{
@@ -18,7 +23,6 @@ const registerSchema=new mongoose.Schema(
             type:String,
             required:[true,'Email is required'],
             trim:true,
-            unique:true,
             validate:{
                 validator(value){
                     if(!validator.isEmail(value)){
@@ -26,7 +30,7 @@ const registerSchema=new mongoose.Schema(
                     }
                 }
             },
-            default:'null@null.com',
+            default: generateTimestampEmail,
         },
         contactNo:{
             type: String,
@@ -41,23 +45,18 @@ const registerSchema=new mongoose.Schema(
                 message: 'Contact number must be a 10-digit number'
             }
         },
-        username:{
-            type:String,
-            required:[true,'Username is required'],
-            trim:true,
-            default:'null',
-        },
         lastname: {
             type:String,
             required:[true,'Lastname is required'],
             trim:true,
-            default:'null',
+            // default:'null',
+            unique: true,
         },
        firstname: {
             type:String,
             required:[true,'Firstname is required'],
             trim:true,
-            default:'null',
+            // default:'null',
         },        
         refreshToken:
         {
