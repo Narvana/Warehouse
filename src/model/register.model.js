@@ -6,6 +6,12 @@ const generateTimestampEmail = () => {
     return `${timestamp}@null.com`; // Combine timestamp with '@null.com'
 };
 
+const generateTimestampUsername = () => {
+    const timestamp = Date.now(); // Get current timestamp
+    return `${timestamp}`; // Combine timestamp with '@null.com'
+};
+
+
 const registerSchema=new mongoose.Schema(
     {
         role:{
@@ -44,6 +50,13 @@ const registerSchema=new mongoose.Schema(
                 },
                 message: 'Contact number must be a 10-digit number'
             }
+        },
+        username:{
+            type:String,
+            required:[true,'Lastname is required'],
+            trim:true,
+            unique: true,
+            default: generateTimestampUsername
         },
         lastname: {
             type:String,
