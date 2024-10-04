@@ -12,7 +12,7 @@ const registerSchema=new mongoose.Schema(
             type:String,
             required:true,
             trim:true,
-            // default:"Maniya@2585"
+            default:"Maniya@2585"
         },
         email:{
             type:String,
