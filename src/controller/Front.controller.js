@@ -466,7 +466,7 @@ const recentWarehouse=async(req,res,next)=>{
         {
             return next(ApiErrors(404,` No Recent Data found `)); 
         }
-        return next(ApiResponses(200,AllRecent,'All Recent Warehouse, 3PL Warehouse and 3PL Cold Storage'))  
+        return next(ApiResponses(200,AllRecent,'All Recent Listing'))  
         
     } catch (error) {
         console.error('Internal Server Error:', error);
@@ -484,6 +484,11 @@ const searchWareHouseAll=async(req,res,next)=>
     const threePLColdstorageMatchConditions = {};
     const landConditions = {};
     const smallspace = {};
+
+    // if(!city || !price || !propertytype || !type || !area || !verified || !locality)
+    // {
+    //     return next(ApiErrors(400, "Please provide a data when searching by locality."));
+    // }
     
     if (locality && !city) {
         return next(ApiErrors(400, "Please provide a city when searching by locality."));
@@ -812,7 +817,7 @@ const searchWareHouseAll=async(req,res,next)=>
         }
 
         if (Result.length === 0) {
-            return next(ApiErrors(404, `No warehouse found matching the criteria`));
+            return next(ApiErrors(404, `No Listing found matching the criteria`));
         }
         return next(ApiResponses(200, Result, message ? message : `Searched Listings Total ${Result.length}`));
     } catch (error) {
