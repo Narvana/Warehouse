@@ -19,6 +19,8 @@ const generateRefreshToken=require('../middleware/token/generateRefreshToken');
     // });
 // }
 
+
+
 const requestOtp = async (req, res, next) => {
     const { contactNo } = req.body;
 
@@ -32,12 +34,15 @@ const requestOtp = async (req, res, next) => {
         {
             // return next(ApiErrors(400, 'No Lister Found'));
             const user= new Register({
+                firstname : "null",
+                lastname : "null",
+                // username : "null",
                 contactNo,
-                role: req.role                
+                // email : "@null.com",
+                // password : "",
+                role : req.role            
             })
-            // const data =
             await user.save();
-            // return next(ApiResponses(201,data),`${username}`)
             message=`${contactNo} registered and OTP send to this Contact Number`;
         }
         else
@@ -56,7 +61,39 @@ const requestOtp = async (req, res, next) => {
         return next(ApiResponses(200,[],message));
 
     } catch (error) {
-        return next(ApiErrors(500,`${error.message}, ${error.stack}, ${error}`));
+        console.log({
+            'Internal Serve Error, ' : error.message,
+            error
+            });
+            
+        if(error.name === 'ValidationError')
+        {
+            const errorMessages = Object.values(error.errors).map(error => error.message);
+            return next(ApiErrors(500,errorMessages[0]));            
+        }
+        else if(error.code === 11000)
+        {
+            const cinMatch = error.errorResponse.errmsg.match(/"([^"]+)"/);
+            // console.log(cinMatch[1]);
+            if(error.errorResponse.errmsg.includes('contactNo'))
+            {
+                console.log(error);
+                return next(ApiErrors(500, `This Contact no is already taken -: ${cinMatch[1]}`));
+            }
+            else if(error.errorResponse.errmsg.includes('email'))
+            {
+                return next(ApiErrors(500, `This email is already taken -: ${cinMatch[1]}`));
+            }
+            else if(error.errorResponse.errmsg.includes('username'))
+            {
+                return next(ApiErrors(500, `This email is already taken -: ${cinMatch[1]}`));
+            }
+        }
+        else
+        {
+           
+            return next(ApiErrors(500,`Internal Server Error, Error -: ${error} `));
+        }
     }
 }
 
