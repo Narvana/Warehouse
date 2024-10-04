@@ -4,6 +4,7 @@ const ApiErrors =require("../utils/ApiResponse/ApiErrors");
 const ApiResponses = require("../utils/ApiResponse/ApiResponse");
 const generateAccessToken=require('../middleware/token/generateAccessToken');
 const generateRefreshToken=require('../middleware/token/generateRefreshToken');
+
 // const generateOtp = () => {
 //     return Math.floor(100000 + Math.random() * 900000); // Generates a 6-digit OTP
 // }
@@ -18,29 +19,41 @@ const generateRefreshToken=require('../middleware/token/generateRefreshToken');
     // });
 // }
 
-
-
 const requestOtp = async (req, res, next) => {
     const { contactNo } = req.body;
 
     try {       
-        if (!contactNo) {
-            return next(ApiErrors(400, 'Please enter your registered number'));
+        if (!contactNo){
+            return next(ApiErrors(400, 'Please enter your Contact number'));
         }
-
+        let message= null;
         const check= await Register.findOne({contactNo,role:'LISTER'});
         if(!check)
         {
-            return next(ApiErrors(400, 'No Lister Found'));
+            // return next(ApiErrors(400, 'No Lister Found'));
+            const user= new Register({
+                contactNo,
+                role: req.role                
+            })
+            // const data =
+            await user.save();
+            // return next(ApiResponses(201,data),`${username}`)
+            message=`${contactNo} registered and OTP send to this Contact Number`;
+        }
+        else
+        {
+            message="OTP Generated and Sent to your Registered Contact No";
         }
         const otp = 111111; // const otp = generateOtp();
 
         // Save OTP to database
         const otpEntry = new Otp({ contactNo, otp });
         await otpEntry.save();
+
         // Send OTP to user
         // await sendOtp(contactNo, otp);
-        return next(ApiResponses(200,[],'OTP Generated and Sent to your phone'));
+
+        return next(ApiResponses(200,[],message));
 
     } catch (error) {
         return next(ApiErrors(500,`${error.message}, ${error.stack}, ${error}`));
