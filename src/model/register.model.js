@@ -19,6 +19,9 @@ const registerSchema=new mongoose.Schema(
             required: [true,'Role is required'],
             enum:['ADMIN','LISTER']
         },
+        occupation:{
+            type:String,
+        },
         password:{
             type:String,
             required:true,
