@@ -48,6 +48,9 @@ const AddWareHouse=async(req,res,next)=>{
                 })
             )
          }
+         else{
+            imageURL=[];
+         }
 
         
         const warehouse=new Warehouse({
@@ -117,7 +120,7 @@ const getListerAllWarehouse=async(req,res,next)=>{
                     city: '$basicInfo.city',
                     price: '$floorRent.expectedRent',
                     description: '$wareHouseDescription',
-                    image: { $arrayElemAt: ['$wareHouseImage', 0] },
+                    image: { $ifNull: [{ $arrayElemAt: ['$wareHouseImage', 0] }, null] }, 
                     type: '$type',
                     isVerified : '$isVerified',
                     isFeatured : '$isFeatured',

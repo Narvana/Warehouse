@@ -94,12 +94,12 @@ const ThreePLWarehouseSchema= new mongoose.Schema({
         },
         WarehouseImage:{ 
             type:[String],
-            validate:{
-                validator: function(v){
-                    return v && v.length > 0;
-                },
-                message:'Atleast 1 3PL Warehouse Image is required'
-            }
+            // validate:{
+            //     validator: function(v){
+            //         return v && v.length > 0;
+            //     },
+            //     message:'Atleast 1 3PL Warehouse Image is required'
+            // }
         },
         warehouseAddress: {
             // type: [AddressSchema],

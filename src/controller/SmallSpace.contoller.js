@@ -45,6 +45,9 @@ const AddSmallSpace=async(req,res,next)=>{
                 })
             )
          }
+         else{
+            imageURL=[];
+         }
 
         
         const smallspace=new SmallSpace({
@@ -107,7 +110,7 @@ const getListerAllSmallSpace=async(req,res,next)=>{
                     city: '$basicInfo.city',
                     price: '$SmallSpaceDetails.expectedRent',
                     description: '$SmallSpaceDescription',
-                    image: { $arrayElemAt: ['$SmallSpaceImage', 0] },
+                    image: { $ifNull: [{ $arrayElemAt: ['$SmallSpaceImage', 0] }, null] }, 
                     type: '$type',
                     isVerified : '$isVerified',
                     isFeatured : '$isFeatured',

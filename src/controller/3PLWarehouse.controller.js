@@ -51,6 +51,9 @@ const Add3PLWarehouse=async(req,res,next)=>{
                 );
                 warehouse_details.WarehouseImage = imageURL;
             }        
+            else{
+                warehouse_details.WarehouseImage = [];
+            }
 
             PL = new ThreePLWarehouse({
                 Lister: req.user.id,
@@ -124,7 +127,7 @@ const AllPLWarehouse=async(req,res,next)=>{
                 city: '$warehouse_details.warehouseAddress.city',
                 price: '$warehouse_details.otherDetails.DepositRent',
                 description: '$warehouse_details.otherDetails.DescribeFacility',
-                image: { $arrayElemAt: ['$warehouse_details.WarehouseImage', 0] },
+                image: { $ifNull: [{ $arrayElemAt: ['$warehouse_details.WarehouseImage', 0] }, null] }, 
                 type: '$type',
                 isVerified : '$isVerified',
                 isFeatured : '$isFeatured',

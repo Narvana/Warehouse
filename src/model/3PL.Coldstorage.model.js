@@ -52,12 +52,12 @@ const ThreePLColdstorageSchema= new mongoose.Schema({
     cold_storage_details:{
         ColdStorageImage: {
             type:[String],
-            validate: {
-                validator: function(v){
-                    return v && v.length > 0;
-                },
-                message:'Atleast 1 3PL Cold Storage Image is required'
-            }
+            // validate: {
+            //     validator: function(v){
+            //         return v && v.length > 0;
+            //     },
+            //     message:'Atleast 1 3PL Cold Storage Image is required'
+            // }
         },
 
         ColdStorageAddress:{

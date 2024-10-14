@@ -42,7 +42,9 @@ const AddLand=async(req,res,next)=>{
                     imageURL.push(link);
                 })
             );
-        }        
+        }else{
+            imageURL=[];
+        }
 
         const Land=new LandModel({
             Lister: req.user.id,
@@ -106,7 +108,7 @@ const AllLandLister = async(req,res,next)=>{
                 city: '$basicInfo.city',
                 price: '$AdditionalDetails.SalePrice',
                 description: '$AdditionalDetails.SpecialRemark',
-                image: { $arrayElemAt: ['$LandImage', 0] },
+                image: { $ifNull: [{ $arrayElemAt: ['$LandImage', 0] }, null] }, 
                 type: '$type',
                 isVerified : '$isVerified',
                 isFeatured : '$isFeatured',
@@ -251,10 +253,8 @@ const UpdateListedLand=async(req,res,next)=>{
                 return res.status(404).json({ error: 'Land not found' });
               }
               return next(ApiResponses(200,updateLand,'Land updated successfully'));
-              
         }
         return next(ApiErrors(400,'Provide the data that you want to updated'));
-
     } catch (error) {
         if(error.name === 'ValidationError')
             {
@@ -275,7 +275,6 @@ const UpdateListedLand=async(req,res,next)=>{
                         return next(ApiErrors(500, `This email is already taken -: ${cinMatch[1]}`));
                     }
                 }
-    
             else
             {
                 console.error('Error updating warehouse:', error);

@@ -17,12 +17,12 @@ const LandSchema= new mongoose.Schema({
     type:{ type:String, default:"LAND", immutable: true },
     LandImage:{ 
         type:[String],
-        validate:{
-            validator: function(v){
-                return v && v.length > 0;
-            },
-            message:'Atleast 1 Land Image is required'
-        }
+        // validate:{
+        //     validator: function(v){
+        //         return v && v.length > 0;
+        //     },
+        //     message:'Atleast 1 Land Image is required'
+        // }
     },
     AdditionalDetails:{
         InterestedIn:[String],

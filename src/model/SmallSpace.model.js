@@ -17,12 +17,12 @@ const SmallSpaceSchema= new mongoose.Schema({
     type:{type:String,default:"SMALLSPACE",immutable: true },
     SmallSpaceImage: {
         type:[String],
-        validate:{
-            validator: function(v){
-                return v && v.length > 0;
-            },
-            message:'Atleast 1 Image of your Small Space is required'
-        }
+        // validate:{
+        //     validator: function(v){
+        //         return v && v.length > 0;
+        //     },
+        //     message:'Atleast 1 Image of your Small Space is required'
+        // }
      },
      SmallSpaceDescription: {
         type: String,

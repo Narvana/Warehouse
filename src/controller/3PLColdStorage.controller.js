@@ -52,7 +52,11 @@ const Add3PLColdStorage=async(req,res,next)=>{
                 })
             );
             cold_storage_details.ColdStorageImage = imageURL;
-        } 
+        }
+        else
+        {
+            cold_storage_details.ColdStorageImage = [];
+        }
 
         
 
@@ -120,7 +124,7 @@ const AllPLColdStorage=async(req,res,next)=>{
                 city: '$cold_storage_details.ColdStorageAddress.city',
                 price: '$cold_storage_details.AdditionDetails.DepositRent',
                 description: '$cold_storage_details.AdditionDetails.DescribeFacility',
-                image: { $arrayElemAt: ['$cold_storage_details.ColdStorageImage', 0] },
+                image: { $ifNull: [{ $arrayElemAt: ['$cold_storage_details.ColdStorageImage', 0] }, null] }, 
                 type: '$type',
                 isVerified : '$isVerified',
                 isFeatured : '$isFeatured'
