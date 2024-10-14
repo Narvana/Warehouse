@@ -19,8 +19,6 @@ const generateRefreshToken=require('../middleware/token/generateRefreshToken');
     // });
 // }
 
-
-
 const requestOtp = async (req, res, next) => {
     const { contactNo } = req.body;
 
@@ -29,6 +27,7 @@ const requestOtp = async (req, res, next) => {
             return next(ApiErrors(400, 'Please enter your Contact number'));
         }
         let message= null;
+        let statusCode=null;
         const check= await Register.findOne({contactNo,role:'LISTER'});
         if(!check)
         {
@@ -36,18 +35,21 @@ const requestOtp = async (req, res, next) => {
             const user= new Register({
                 firstname : "null",
                 lastname : "null",
-                // username : "null",
+                // username : null,
                 contactNo,
                 // email : "@null.com",
                 // password : "",
+                occupation:"null",
                 role : req.role            
             })
             await user.save();
-            message=`${contactNo} registered and OTP send to this Contact Number`;
+            message=`${contactNo} Registered Successfully`;
+            statusCode = 201;
         }
         else
         {
-            message="OTP Generated and Sent to your Registered Contact No";
+            message="OTP Sent to this Contact Number";
+            statusCode = 200;
         }
         const otp = 111111; // const otp = generateOtp();
 
@@ -58,7 +60,7 @@ const requestOtp = async (req, res, next) => {
         // Send OTP to user
         // await sendOtp(contactNo, otp);
 
-        return next(ApiResponses(200,[],message));
+        return next(ApiResponses(statusCode,[],message));
 
     } catch (error) {
         console.log({
@@ -90,8 +92,7 @@ const requestOtp = async (req, res, next) => {
             }
         }
         else
-        {
-           
+        {  
             return next(ApiErrors(500,`Internal Server Error, Error -: ${error} `));
         }
     }
@@ -99,7 +100,7 @@ const requestOtp = async (req, res, next) => {
 
 const verifyOtp = async (req, res, next) => {
 
-    const { contactNo, otp } = req.body;
+    const { contactNo, otp, message } = req.body;
 
     if (!contactNo || !otp) {
         return next(ApiErrors(400, 'Please enter both contact number and OTP'));
@@ -108,11 +109,11 @@ const verifyOtp = async (req, res, next) => {
     const user = await Register.findOne({contactNo }).select("-password -refreshToken");
     if(!user)
     {
-        return next(ApiErrors(400,`${contactNo} Contact Number don't Exist. Either Enter a correct one or Register Yourself with this Contact Number.`)) 
+        return next(ApiErrors(400,`${contactNo} Contact Number don't Exist. Either Enter a correct one or Register Yourself with this Contact Number.`));
     }
     else if(user.role !== req.role)
     {
-        return next(ApiErrors(400,`Contact Number ${contactNo} is not assigned with ${req.role} role`))
+        return next(ApiErrors(400,`Contact Number ${contactNo} is not assigned with ${req.role} role`));
     }
 
     const otpEntry = await Otp.findOne({ contactNo, otp });
@@ -122,12 +123,11 @@ const verifyOtp = async (req, res, next) => {
     }
 
     const accessToken = await generateAccessToken(user._id);
- 
     const refreshToken=await generateRefreshToken(user._id);
 
     await Otp.deleteOne({ _id: otpEntry._id });
 
-    return next(ApiResponses(200,{user,accessToken,refreshToken},`${user.role} Logged In Successfully`))
+    return next(ApiResponses(200,{user,accessToken,refreshToken},`${message}`));
 }
 
 module.exports={

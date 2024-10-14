@@ -29,6 +29,7 @@ const SignUp=async(req,res,next)=>{
                     contactNo,
                     email,
                     password : hashedPassword,
+                    occupation:'ADMIN',
                     role : req.role
             })
     
@@ -169,9 +170,9 @@ const update=async(req,res,next)=>{
     }
 
     try {
-        const { firstname, lastname, username, contactNo, email} = req.body;
+        const { firstname, lastname, username, contactNo, email , occupation} = req.body;
 
-        if(!firstname && !lastname && !username && !contactNo && !email)
+        if(!firstname && !lastname && !username && !contactNo && !email && !occupation)
         {
             return next(ApiErrors(400,`Please Enter Data that you want to update`));
         }
@@ -187,6 +188,7 @@ const update=async(req,res,next)=>{
                     username: username,
                     contactNo: contactNo,
                     email: email,
+                    occupation : occupation
                 }
             },
             {
