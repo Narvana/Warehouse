@@ -857,7 +857,6 @@ const AllSmallSpace = async(req,res,next)=>{
 const SendEnquiry = async(req,res,next)=>{
 
     const  UserID=req.user.id;
-
     try 
     {
         const User= await Register.findById(UserID)
@@ -865,7 +864,7 @@ const SendEnquiry = async(req,res,next)=>{
         {
             return next(ApiErrors(404,'No User Found with The ID Provided'));
         }
-        const { UserName , ListingID , ListingModel, EnquiryMessage } = req.body;
+        const { UserName, ListingID , ListingModel, ImageEnquiry, EnquiryMessage } = req.body;
         if(!ListingID || !ListingID.trim() || !ListingModel || !ListingModel.trim())
         {
             return next(ApiErrors(400,'Please Provide Both the field Listing ID and Listing Model to send Enquiry')); 
@@ -886,7 +885,6 @@ const SendEnquiry = async(req,res,next)=>{
             return next(ApiErrors(400,'No Listing found with the provided Listing ID')); 
         }
 
-
         if(found.Lister == UserID)
         {            
             return next(ApiErrors(400,'You Can Not enquire for your own Listing')); 
@@ -906,6 +904,7 @@ const SendEnquiry = async(req,res,next)=>{
             UserID,
             ListingID,
             ListingModel,
+            ImageEnquiry,
             EnquiryMessage
         })
 
