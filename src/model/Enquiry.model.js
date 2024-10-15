@@ -24,8 +24,7 @@ const EnquirySchema = new mongoose.Schema(
             //     validator: async function(value) {
             //         // Check if the corresponding model exists based on the listingModel
             //         const model = this.ListingModel;
-            //         let modelExists = false;
-                    
+            //         let modelExists = false;                    
             //         switch (model) {
             //             case 'ThreePLWarehouse':
             //                 modelExists = await ThreePLWarehouse.exists({ _id: value });
@@ -56,6 +55,10 @@ const EnquirySchema = new mongoose.Schema(
             required: true,
             enum: ['ThreePLWarehouse', 'ThreePLColdstorage', 'Warehouse', 'LandModel','SmallSpace'],
             // select: false 
+        },
+        ImageEnquiry:{
+            type:Boolean,
+            default:false
         },
         EnquiryMessage:{
             type:String,
