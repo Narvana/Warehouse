@@ -254,7 +254,7 @@ const allListing=async(req,res,next)=>{
 const EnquiryList = async (req,res,next) =>{
 
     try {
-        const List = await Enquiry.find({ImageEnquiry:true}).populate({
+        const List = await Enquiry.find({ImageEnquiry:false}).populate({
             path: "UserID",
             select: "-_id firstname lastname email contactNo"
         }).lean();
@@ -346,7 +346,7 @@ const EnquiryList = async (req,res,next) =>{
 const ImageEnquiryList = async (req,res,next) =>{
 
     try {
-        const List = await Enquiry.find({ImageEnquiry:false}).populate({
+        const List = await Enquiry.find({ImageEnquiry:true}).populate({
             path: "UserID",
             select: "-_id firstname lastname email contactNo"
         }).lean();
