@@ -254,7 +254,7 @@ const allListing=async(req,res,next)=>{
 const EnquiryList = async (req,res,next) =>{
 
     try {
-        const List = await Enquiry.find().populate({
+        const List = await Enquiry.find({ImageEnquiry:true}).populate({
             path: "UserID",
             select: "-_id firstname lastname email contactNo"
         }).lean();
@@ -316,20 +316,20 @@ const EnquiryList = async (req,res,next) =>{
                         Rent : enquiry.ListingID.AdditionalDetails.ExpectedRent,
                         Area : enquiry.ListingID.landInfo.TotalLand,
                     }
+            }
+            else if (enquiry.ListingModel === 'SmallSpace') {
+                await Enquiry.populate(enquiry,{
+                    path: "ListingID",
+                    select: 'basicInfo.address basicInfo.city SmallSpaceDetails.expectedRent SmallSpaceDetails.totalPlotArea'
+                });
+                
+                enquiry.ListingID={
+                    address : enquiry.ListingID.basicInfo.address,
+                    city : enquiry.ListingID.basicInfo.city,
+                    Rent : enquiry.ListingID.SmallSpaceDetails.expectedRent,
+                    Area : enquiry.ListingID.SmallSpaceDetails.totalPlotArea,
                 }
-                else if (enquiry.ListingModel === 'SmallSpace') {
-                    await Enquiry.populate(enquiry,{
-                        path: "ListingID",
-                        select: 'basicInfo.address basicInfo.city SmallSpaceDetails.expectedRent SmallSpaceDetails.totalPlotArea'
-                    });
-                    
-                    enquiry.ListingID={
-                        address : enquiry.ListingID.basicInfo.address,
-                        city : enquiry.ListingID.basicInfo.city,
-                        Rent : enquiry.ListingID.SmallSpaceDetails.expectedRent,
-                        Area : enquiry.ListingID.SmallSpaceDetails.totalPlotArea,
-                    }
-                }
+            }
         }
 
         console.log('Total Enquiry List', List.length);
@@ -342,6 +342,100 @@ const EnquiryList = async (req,res,next) =>{
         return next(ApiErrors(500,`Internal Server Error -: ${error.message}`));        
     }
 } 
+
+const ImageEnquiryList = async (req,res,next) =>{
+
+    try {
+        const List = await Enquiry.find({ImageEnquiry:false}).populate({
+            path: "UserID",
+            select: "-_id firstname lastname email contactNo"
+        }).lean();
+        if(List.length === 0)
+        {
+            return next(ApiErrors(404,`No Enquiry Found`));    
+        }
+
+        for (let enquiry of List) 
+        {
+
+            if (enquiry.ListingModel === 'ThreePLWarehouse') {
+                await Enquiry.populate(enquiry,{
+                    path: "ListingID",
+                    select: 'warehouse_details.warehouseAddress.address warehouse_details.warehouseAddress.city warehouse_details.Storage.TotalArea warehouse_details.otherDetails.DepositRent'
+                });
+
+                enquiry.ListingID={
+                    address : enquiry.ListingID.warehouse_details.warehouseAddress.address ,
+                    city : enquiry.ListingID.warehouse_details.warehouseAddress.city,
+                    Rent : enquiry.ListingID.warehouse_details.otherDetails.DepositRent,
+                    Area : enquiry.ListingID.warehouse_details.Storage.TotalArea,
+                }
+            }
+
+            else if (enquiry.ListingModel === 'ThreePLColdstorage') {
+                await Enquiry.populate(enquiry, {
+                    path: "ListingID",
+                    select: 'cold_storage_details.ColdStorageAddress.address cold_storage_details.ColdStorageAddress.city cold_storage_details.AdditionDetails.DepositRent cold_storage_details.ColdStorageFacility.TotalArea '
+                });
+                enquiry.ListingID={
+                    address : enquiry.ListingID.cold_storage_details.ColdStorageAddress.address,
+                    city : enquiry.ListingID.cold_storage_details.ColdStorageAddress.city,
+                    Rent : enquiry.ListingID.cold_storage_details.AdditionDetails.DepositRent,
+                    Area : enquiry.ListingID.cold_storage_details.ColdStorageFacility.TotalArea ,
+                }
+            } else if (enquiry.ListingModel === 'Warehouse') {
+                await Enquiry.populate(enquiry, {
+                    path: "ListingID",
+                    select: 'basicInfo.address basicInfo.city floorRent.expectedRent layout.totalPlotArea'
+                });
+                
+                enquiry.ListingID={
+                    address : enquiry.ListingID.basicInfo.address,
+                    city : enquiry.ListingID.basicInfo.city,
+                    Rent : enquiry.ListingID.floorRent.expectedRent,
+                    Area : enquiry.ListingID.layout.totalPlotArea,
+                }
+            }
+            else if (enquiry.ListingModel === 'LandModel') {
+                    await Enquiry.populate(enquiry, {
+                        path: "ListingID",
+                        select: 'basicInfo.address basicInfo.city AdditionalDetails.ExpectedRent landInfo.TotalLand'
+                    });            
+
+                    enquiry.ListingID={
+                        address : enquiry.ListingID.basicInfo.address,
+                        city : enquiry.ListingID.basicInfo.city,
+                        Rent : enquiry.ListingID.AdditionalDetails.ExpectedRent,
+                        Area : enquiry.ListingID.landInfo.TotalLand,
+                    }
+            }
+            else if (enquiry.ListingModel === 'SmallSpace') {
+                await Enquiry.populate(enquiry,{
+                    path: "ListingID",
+                    select: 'basicInfo.address basicInfo.city SmallSpaceDetails.expectedRent SmallSpaceDetails.totalPlotArea'
+                });
+                
+                enquiry.ListingID={
+                    address : enquiry.ListingID.basicInfo.address,
+                    city : enquiry.ListingID.basicInfo.city,
+                    Rent : enquiry.ListingID.SmallSpaceDetails.expectedRent,
+                    Area : enquiry.ListingID.SmallSpaceDetails.totalPlotArea,
+                }
+            }
+        }
+
+        console.log('Total Enquiry List', List.length);
+
+        return next(ApiResponses(200,List,'Enquiry List'));
+   
+    } catch (error) {
+        console.log({error});
+        
+        return next(ApiErrors(500,`Internal Server Error -: ${error.message}`));        
+    }
+} 
+
+
 
 const ListerList = async(req,res,next) => {
 
@@ -600,6 +694,7 @@ module.exports={
    allListing,
    UpdateFeatureStatus,
    EnquiryList,
+   ImageEnquiryList,
    ListerList,
    RemoveEnquiry,
    RemoveListing,
