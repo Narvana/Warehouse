@@ -17,6 +17,8 @@ router.put('/Featured/Status',verify(['ADMIN']),AdminController.UpdateFeatureSta
 
 router.get('/Enquiry/List',verify(['ADMIN']),AdminController.EnquiryList);
 
+router.get('/Image/Enquiry/List',verify(['ADMIN']),AdminController.ImageEnquiryList);
+
 router.get('/Listers/List',verify(['ADMIN']),AdminController.ListerList);
 
 router.delete('/Remove/Enquiry',verify(['ADMIN']),AdminController.RemoveEnquiry);
